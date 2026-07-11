@@ -1,0 +1,32 @@
+reach,river,regime,slope_treatment,Q_at_stage10_cms,pct_vs_IRIS_SWORD
+74295200111,Big Sioux River,backwater,hydrofabric,6564.9,
+74295200111,Big Sioux River,backwater,IRIS-SWORD,5982.3,0.0
+74295200111,Big Sioux River,backwater,SWOT-median,6588.5,10.1
+74295200111,Big Sioux River,backwater,SWOT-floodstage,6582.1,10.0
+74295200111,Big Sioux River,backwater,SWOT-maxWSE,6492.5,8.5
+74295100321,Little Sioux River,kinematic,IRIS-SWORD,2760.3,0.0
+74295100321,Little Sioux River,kinematic,SWOT-median,2759.4,-0.0
+74295100321,Little Sioux River,kinematic,SWOT-floodstage,2734.5,-0.9
+74295100321,Little Sioux River,kinematic,SWOT-maxWSE,2909.5,5.4
+74270100061,Mississippi River,backwater,hydrofabric,10464.4,
+74270100061,Mississippi River,backwater,IRIS-SWORD,9959.6,0.0
+74270100061,Mississippi River,backwater,SWOT-median,10174.4,2.2
+74270100061,Mississippi River,backwater,SWOT-floodstage,10174.4,2.2
+74270100061,Mississippi River,backwater,SWOT-maxWSE,10304.3,3.5
+74267300251,Ohio River,backwater,hydrofabric,25357.4,
+74267300251,Ohio River,backwater,IRIS-SWORD,5024.7,0.0
+74267300251,Ohio River,backwater,SWOT-median,27311.1,443.5
+74267300251,Ohio River,backwater,SWOT-floodstage,23121.0,360.1
+74267300251,Ohio River,backwater,SWOT-maxWSE,13304.7,164.8
+74267300251,Ohio River,backwater,gauge time-varying S(Q),19840.9,294.9
+74282100111,Illinois River,kinematic,hydrofabric,28849.2,
+74282100111,Illinois River,kinematic,IRIS-SWORD,6900.9,0.0
+74282100111,Illinois River,kinematic,SWOT-median,5379.1,-22.1
+74282100111,Illinois River,kinematic,SWOT-floodstage,6827.7,-1.1
+74282100111,Illinois River,kinematic,SWOT-maxWSE,8749.7,26.8
+74282100101,Illinois River,kinematic,hydrofabric,31108.6,
+74282100101,Illinois River,kinematic,IRIS-SWORD,9774.6,0.0
+74282100101,Illinois River,kinematic,SWOT-median,7122.3,-27.1
+74282100101,Illinois River,kinematic,SWOT-floodstage,10456.2,7.0
+74282100101,Illinois River,kinematic,SWOT-maxWSE,12921.1,32.2
+74282100101,Illinois River,kinematic,gauge time-varying S(Q),15424.2,57.8

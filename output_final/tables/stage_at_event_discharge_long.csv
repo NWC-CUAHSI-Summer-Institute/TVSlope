@@ -1,0 +1,32 @@
+reach,river,regime,slope_treatment,event_Q_cms,stage_at_eventQ_m,d_stage_vs_IRIS_SWORD_m
+74295200111,Big Sioux River,backwater,hydrofabric,2072.0,6.08,
+74295200111,Big Sioux River,backwater,IRIS-SWORD,2072.0,6.32,0.0
+74295200111,Big Sioux River,backwater,SWOT-median,2072.0,6.07,-0.25
+74295200111,Big Sioux River,backwater,SWOT-floodstage,2072.0,6.07,-0.25
+74295200111,Big Sioux River,backwater,SWOT-maxWSE,2072.0,6.11,-0.21
+74295100321,Little Sioux River,kinematic,IRIS-SWORD,42.0,1.47,0.0
+74295100321,Little Sioux River,kinematic,SWOT-median,42.0,1.47,0.0
+74295100321,Little Sioux River,kinematic,SWOT-floodstage,42.0,1.48,0.01
+74295100321,Little Sioux River,kinematic,SWOT-maxWSE,42.0,1.43,-0.04
+74270100061,Mississippi River,backwater,hydrofabric,20923.0,13.06,
+74270100061,Mississippi River,backwater,IRIS-SWORD,20923.0,13.31,0.0
+74270100061,Mississippi River,backwater,SWOT-median,20923.0,13.2,-0.11
+74270100061,Mississippi River,backwater,SWOT-floodstage,20923.0,13.2,-0.11
+74270100061,Mississippi River,backwater,SWOT-maxWSE,20923.0,13.14,-0.17
+74267300251,Ohio River,backwater,hydrofabric,14537.0,7.27,
+74267300251,Ohio River,backwater,IRIS-SWORD,14537.0,17.57,0.0
+74267300251,Ohio River,backwater,SWOT-median,14537.0,6.97,-10.6
+74267300251,Ohio River,backwater,SWOT-floodstage,14537.0,7.67,-9.9
+74267300251,Ohio River,backwater,SWOT-maxWSE,14537.0,10.51,-7.05
+74267300251,Ohio River,backwater,gauge time-varying S(Q),14537.0,8.37,-9.19
+74282100111,Illinois River,kinematic,hydrofabric,2823.0,4.09,
+74282100111,Illinois River,kinematic,IRIS-SWORD,2823.0,7.12,0.0
+74282100111,Illinois River,kinematic,SWOT-median,2823.0,7.82,0.7
+74282100111,Illinois River,kinematic,SWOT-floodstage,2823.0,7.15,0.03
+74282100111,Illinois River,kinematic,SWOT-maxWSE,2823.0,6.5,-0.61
+74282100101,Illinois River,kinematic,hydrofabric,2956.0,4.02,
+74282100101,Illinois River,kinematic,IRIS-SWORD,2956.0,6.26,0.0
+74282100101,Illinois River,kinematic,SWOT-median,2956.0,7.07,0.81
+74282100101,Illinois River,kinematic,SWOT-floodstage,2956.0,6.1,-0.16
+74282100101,Illinois River,kinematic,SWOT-maxWSE,2956.0,5.61,-0.64
+74282100101,Illinois River,kinematic,gauge time-varying S(Q),2956.0,5.28,-0.98

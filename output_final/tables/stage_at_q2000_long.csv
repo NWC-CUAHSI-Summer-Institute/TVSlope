@@ -1,0 +1,32 @@
+reach,river,regime,slope_treatment,stage_at_Q2000_m,d_stage_vs_IRIS_SWORD_m
+74295200111,Big Sioux River,backwater,hydrofabric,5.99,
+74295200111,Big Sioux River,backwater,IRIS-SWORD,6.23,0.0
+74295200111,Big Sioux River,backwater,SWOT-median,5.98,-0.25
+74295200111,Big Sioux River,backwater,SWOT-floodstage,5.98,-0.25
+74295200111,Big Sioux River,backwater,SWOT-maxWSE,6.01,-0.21
+74295100321,Little Sioux River,kinematic,IRIS-SWORD,10.75,0.0
+74295100321,Little Sioux River,kinematic,SWOT-median,10.75,0.0
+74295100321,Little Sioux River,kinematic,SWOT-floodstage,10.79,0.04
+74295100321,Little Sioux River,kinematic,SWOT-maxWSE,10.5,-0.24
+74270100061,Mississippi River,backwater,hydrofabric,4.16,
+74270100061,Mississippi River,backwater,IRIS-SWORD,4.28,0.0
+74270100061,Mississippi River,backwater,SWOT-median,4.23,-0.05
+74270100061,Mississippi River,backwater,SWOT-floodstage,4.23,-0.05
+74270100061,Mississippi River,backwater,SWOT-maxWSE,4.2,-0.08
+74267300251,Ohio River,backwater,hydrofabric,2.28,
+74267300251,Ohio River,backwater,IRIS-SWORD,5.88,0.0
+74267300251,Ohio River,backwater,SWOT-median,2.18,-3.7
+74267300251,Ohio River,backwater,SWOT-floodstage,2.41,-3.47
+74267300251,Ohio River,backwater,SWOT-maxWSE,3.33,-2.56
+74267300251,Ohio River,backwater,gauge time-varying S(Q),1.61,-4.28
+74282100111,Illinois River,kinematic,hydrofabric,3.47,
+74282100111,Illinois River,kinematic,IRIS-SWORD,6.1,0.0
+74282100111,Illinois River,kinematic,SWOT-median,6.72,0.62
+74282100111,Illinois River,kinematic,SWOT-floodstage,6.13,0.02
+74282100111,Illinois River,kinematic,SWOT-maxWSE,5.55,-0.55
+74282100101,Illinois River,kinematic,hydrofabric,3.31,
+74282100101,Illinois River,kinematic,IRIS-SWORD,5.22,0.0
+74282100101,Illinois River,kinematic,SWOT-median,5.91,0.7
+74282100101,Illinois River,kinematic,SWOT-floodstage,5.08,-0.14
+74282100101,Illinois River,kinematic,SWOT-maxWSE,4.68,-0.54
+74282100101,Illinois River,kinematic,gauge time-varying S(Q),4.55,-0.67

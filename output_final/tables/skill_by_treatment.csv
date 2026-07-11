@@ -1,0 +1,6 @@
+treatment,CSI,F1
+IRIS-SWORD,0.456,0.623
+SWOT-floodstage,0.457,0.624
+SWOT-maxWSE,0.458,0.626
+SWOT-median,0.456,0.623
+gauge time-varying S(Q),0.434,0.605

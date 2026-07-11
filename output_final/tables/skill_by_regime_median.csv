@@ -1,0 +1,11 @@
+dyn_class,treatment,CSI
+backwater,IRIS-SWORD,0.48
+backwater,SWOT-floodstage,0.472
+backwater,SWOT-maxWSE,0.473
+backwater,SWOT-median,0.472
+backwater,gauge time-varying S(Q),0.431
+kinematic,IRIS-SWORD,0.562
+kinematic,SWOT-floodstage,0.56
+kinematic,SWOT-maxWSE,0.571
+kinematic,SWOT-median,0.543
+kinematic,gauge time-varying S(Q),0.566

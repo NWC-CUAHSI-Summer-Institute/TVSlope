@@ -1,0 +1,9 @@
+river,Ohio River,Mississippi River,Big Sioux River,Little Sioux River,Illinois River,Illinois River
+reach id,74267300251,74270100061,74295200111,74295100321,74282100111,74282100101
+type,backwater,backwater,backwater,kinematic,kinematic,kinematic
+slope treatment,,,,,,
+IRIS-SWORD,5.88,4.28,6.23,10.75,6.1,5.22
+SWOT-median,2.18,4.23,5.98,10.75,6.72,5.91
+SWOT-floodstage,2.41,4.23,5.98,10.79,6.13,5.08
+SWOT-maxWSE,3.33,4.2,6.01,10.5,5.55,4.68
+gauge time-varying S(Q),1.61,,,,,4.55
