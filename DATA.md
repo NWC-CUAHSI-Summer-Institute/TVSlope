@@ -15,7 +15,8 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
 | Notebook | Reads (inputs) | Writes (outputs) |
 |---|---|---|
 | `work6_3DHRS.ipynb` | `data/slope_treatments.csv`; `data/SWORD_v17b_gpkg/…` (6 reaches, queried by id); `data/FIMBench/<6 events>/*_BM.tif` + `*_AOI.gpkg`; `data/fimbox_out/HUC{05140101,07130011,07140105,10170203,10230003}/` → `fim-outputs/*.tif`, `discharge-inputs/*.csv`, `watershed-data/*_subset_streams.gpkg`, `*catchments_proj_subset.gpkg`, `branches/*/hydroTable_*.csv.orig`; `data/paired_reach_SWOT_gage/…` (coords only); `data/twin_gauge/`, `data/discharge/` (gauge cache); `data/us_states.gpkg` | `output_final/` (figures PNG+SVG, tables, dossier) |
-| `study_area.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/benchmark_domain_t123hwm.gpkg`; `data/GDW/` (dams) | `output_study_area/` |
+| `gauge_study.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/us_states.gpkg`; USGS NWIS (auto via `dataretrieval`) | `output_gauge/` |
+| `study_area.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/benchmark_domain_t123hwm.gpkg`; `data/GDW/` (dams); FIMBench (auto-downloaded via `fimeval`) | `output_study_area/` |
 | `timevary_slope.ipynb` | `data/SWORD_v17b_gpkg/…`; `data/FIMBench/…`; `data/FIMHF_IRIS_new.csv`; `data/discharge/`, `data/twin_gauge/`; `data/fimbox_out/HUC*/` (18 HUCs, cache) | `output_study_area/timevary/` |
 
 **Sizes that matter** (`du -sh`):

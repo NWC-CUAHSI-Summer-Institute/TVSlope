@@ -1,7 +1,12 @@
-# Conda environment for the three notebooks (work6_3DHRS, timevary_slope, study_area).
+# Base conda environment for the four notebooks (gauge_study, study_area, timevary_slope, work6_3DHRS).
 # Create with:  conda env create -f environment.yml   &&   conda activate slope
-# The analysis (cache) runs need only these packages. FIM (re)generation additionally needs the
-# `fimbox` package (not on conda-forge); it is optional and gated behind REGEN_FIM / TVS_REGEN.
+#
+# These packages reproduce the cached figures (work6_3DHRS). Three HAND-FIM tools from the SDML lab
+# (https://github.com/sdmlua) are installed separately with pip (kept out of the conda solve to avoid
+# geopandas/rasterio conflicts) -- see the README:
+#     pip install fimeval        # download FIMBench benchmarks   (gauge_study / study_area)
+#     pip install fimserve       # HAND-FIM staging/serving        (FIM regeneration)
+#     pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (REGEN_FIM / TVS_REGEN)
 name: slope
 channels:
   - conda-forge
