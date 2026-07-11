@@ -31,12 +31,14 @@ a **static-satellite** baseline (IRIS-SWORD; Chen et al., 2025), three **SWOT**-
 
 ## Notebooks
 
-| Notebook | What it does |
-|---|---|
-| [`code/gauge_study.ipynb`](code/gauge_study.ipynb) | Screens the CONUS SWORD network for same-river upstream/on-reach/downstream USGS gauge triplets that can form a water-surface slope — the gauge-availability basis for reach selection. |
-| [`code/study_area.ipynb`](code/study_area.ipynb) | Selects the study reaches: the gauge triplets above, gated on FIMBench benchmark coverage (benchmarks auto-downloaded via `fimeval`). |
-| [`code/timevary_slope.ipynb`](code/timevary_slope.ipynb) | Develops the time-varying gauge *S(Q)* method over the full reach selection: paired-gauge slope vs discharge, iterative Manning injection, HAND-FIM, and River-Mask CSI/F1. |
-| [`code/work6_3DHRS.ipynb`](code/work6_3DHRS.ipynb) | The focused six-reach study and manuscript figures: static-satellite vs gauge time-varying *S(Q)*, scored on the River-Mask domain, with Results & Discussion. |
+The first two notebooks are **reach-selection** steps; the last two are the **FIM analysis**.
+
+| Notebook | Scope | What it does |
+|---|---|---|
+| [`code/gauge_study.ipynb`](code/gauge_study.ipynb) | **Gauges only — not FIM** | A standalone survey of USGS gauge availability across the entire CONUS SWORD network: which reaches carry a same-river upstream/on-reach/downstream gauge triplet that can form a water-surface slope. Independent of flood-inundation mapping and FIMBench. |
+| [`code/study_area.ipynb`](code/study_area.ipynb) | **FIM reach selection** | Selects the reaches used in the FIM study: those covered by a **FIMBench** benchmark (**Tier 1–3** or high-water-mark) **and** carrying a usable gauge triplet, so both the benchmark and the paired-gauge slope are available. Benchmarks are auto-downloaded via `fimeval`. |
+| [`code/timevary_slope.ipynb`](code/timevary_slope.ipynb) | FIM method | Develops the time-varying gauge *S(Q)* method over the full reach selection: paired-gauge slope vs discharge, iterative Manning injection, HAND-FIM, and River-Mask CSI/F1. |
+| [`code/work6_3DHRS.ipynb`](code/work6_3DHRS.ipynb) | FIM headline study | The focused six-reach study and manuscript figures: static-satellite vs gauge time-varying *S(Q)*, scored on the River-Mask domain, with Results & Discussion. |
 
 ## Installation
 
