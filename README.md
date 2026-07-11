@@ -91,21 +91,6 @@ Running `work6_3DHRS.ipynb` writes every figure into [`output_final/`](output_fi
 
 ## Method &amp; workflow
 
-```
-reach selection            slope treatments              HAND-FIM + scoring
-──────────────────         ─────────────────────         ────────────────────────────
-SWORD ∩ FIMBench       →   hydrofabric (reference)   →   inject slope into the SRC
-same-river gauge           IRIS-SWORD (baseline)         (Manning rescale / iterative S(Q))
-triplets                   SWOT median/floodstage/           │
-(gauge_study,              maxWSE                        NWM forcing: retrospective in-window,
- study_area)               gauge time-varying S(Q)           operational forecast post-2023
-                              (this work)                    │
-                                                         score vs FIMBench on the RIVER MASK
-                                                         (reach NWM catchments; largest CC)
-                                                             │
-                                                         CSI · F1 · POD · FAR  →  regime analysis
-```
-
 Two choices make the comparison defensible: **(1)** every event is forced by one NWM family (retrospective, or the
 operational short-range forecast for post-2023 floods — never a substituted gauge); **(2)** every metric is computed
 on the **river mask** (the union of the reach's NWM catchments, benchmark cleaned to its largest connected
