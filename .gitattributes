@@ -1,0 +1,13 @@
+# Store large binary geodata with Git LFS (install once: `git lfs install`).
+# GitHub rejects individual files > 100 MB unless they are LFS-tracked.
+*.tif   filter=lfs diff=lfs merge=lfs -text
+*.tiff  filter=lfs diff=lfs merge=lfs -text
+*.gpkg  filter=lfs diff=lfs merge=lfs -text
+*.parquet filter=lfs diff=lfs merge=lfs -text
+*.nc    filter=lfs diff=lfs merge=lfs -text
+
+# Notebooks + text stay as normal git objects (diffable).
+*.ipynb text
+*.md    text
+*.py    text
+*.csv   text
