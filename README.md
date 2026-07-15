@@ -65,8 +65,6 @@ cache automatically on the first run.
 
 ## Source code and copyright
 
-All code in this repository is written by **Zih-Syun Chen `<emily30823@gmail.com>`** and builds on several
-open-source tools. Which files come from where:
 
 | Path | Origin | What we changed |
 | --- | --- | --- |
