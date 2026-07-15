@@ -1,5 +1,16 @@
 # Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope
 
+### Time-Varying SWOT River Slope in Operational HAND Flood Inundation Mapping
+
+**CUAHSI Summer Institute 2026** · Innovation in Flood Inundation Mapping for Operational Forecasting
+
+![Status](https://img.shields.io/badge/status-active-2ea44f?style=flat-square)
+![Institute](https://img.shields.io/badge/CUAHSI-Summer_Institute_2026-2166ac?style=flat-square)
+![Compute](https://img.shields.io/badge/compute-CIROH_JupyterHub-e08214?style=flat-square)
+![Reaches](https://img.shields.io/badge/study_reaches-69-9b59b6?style=flat-square)
+![Treatments](https://img.shields.io/badge/slope_treatments-5-b2182b?style=flat-square)
+
+
 The uncalibrated NOAA-OWP HAND synthetic rating curve is Manning (`Q ∝ √S`), so the river **slope** `S` is a
 first-order control on the mapped flood extent. This repository asks whether replacing that slope with a
 static-satellite product (IRIS-SWORD, SWOT) or a **time-varying gauge-derived `S(Q)`** measurably changes HAND-FIM
