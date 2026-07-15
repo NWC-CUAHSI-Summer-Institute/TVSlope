@@ -39,6 +39,8 @@ TV_Slope_FIM.ipynb
 ```
 USGS gauge series download an cache automatically on the first run.
 
+![Workflow](figure/workflow.png)
+
 ## Data
 
 **Provided in `data/` (you do not download).**
