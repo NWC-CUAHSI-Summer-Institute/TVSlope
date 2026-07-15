@@ -1,0 +1,25 @@
+# Conda environment for the three notebooks (work6_3DHRS, timevary_slope, study_area).
+# Create with:  conda env create -f environment.yml   &&   conda activate slope
+# The analysis (cache) runs need only these packages. FIM (re)generation additionally needs the
+# `fimbox` package (not on conda-forge); it is optional and gated behind REGEN_FIM / TVS_REGEN.
+name: slope
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - numpy=2.0
+  - pandas=2.3
+  - geopandas=1.1
+  - pyogrio=0.12
+  - rasterio=1.4
+  - shapely=2.1
+  - affine=2.4
+  - scipy=1.15
+  - scikit-learn=1.7
+  - matplotlib=3.10
+  - contextily=1.7
+  - xyzservices
+  - dataretrieval=1.1
+  - openpyxl=3.1
+  - jupyter
+  - pip
