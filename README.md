@@ -27,14 +27,14 @@ code/TV_Slope_FIM.ipynb        the study notebook (run this)
 code/tvslope_src/engine/       analysis modules 
 code/tvslope_src/fimbox_ext/   build HAND + generate the FIM
 data/                          small derived data
-get_data.py                    downloads the large datasets that are not provided (FIMBench, SWORD)
+code/get_data.py               downloads the large datasets that are not provided (FIMBench, SWORD)
 ```
 
 ## Run it
 
 ```bash
 conda env create -f environment.yml && conda activate slope   # geopandas, rasterio, dataretrieval, ...
-python get_data.py                                             # FIMBench + SWORD (large; not in the repo)
+python code/get_data.py                                             # FIMBench + SWORD (large; not in the repo)
 TV_Slope_FIM.ipynb
 ```
 The notebooks also use three HAND-FIM tools from the [SDML lab](https://github.com/sdmlua). Install the ones you
@@ -63,12 +63,12 @@ pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (need
 | `data/fimbox_bankfull_2yr_cms.parquet` | 2-year recurrence (bankfull) discharge per NWM feature_id | NWM recurrence flows |
 | `data/us_states.gpkg` | US state boundaries for the CONUS map | Public US state boundaries |
 
-**Fetched by code — not in the repo. Run `python get_data.py`.**
+**Fetched by code — not in the repo. Run `python code/get_data.py`.**
 
 | Data | How to get it | Source |
 | --- | --- | --- |
-| FIMBench benchmark flood maps (`data/FIMBench/`) | `python get_data.py` (uses `fimeval`) | **FIMbench** (https://tethys.ciroh.org/apps/fimbench-gui/) |
-| SWORD v17b river network (`data/SWORD_v17b_gpkg/na_sword_reaches_v17b.gpkg`) | `python get_data.py` | **SWORD v17** (https://zenodo.org/records/15299138) |
+| FIMBench benchmark flood maps (`data/FIMBench/`) | `python code/get_data.py` (uses `fimeval`) | **FIMbench** (https://tethys.ciroh.org/apps/fimbench-gui/) |
+| SWORD v17b river network (`data/SWORD_v17b_gpkg/na_sword_reaches_v17b.gpkg`) | `python code/get_data.py` | **SWORD v17** (https://zenodo.org/records/15299138) |
 | USGS gauge discharge & stage (`data/discharge/`, `data/twin_gauge/`) | cached on the first notebook run (`dataretrieval`) | USGS NWIS |
 | NWM hydrofabric + 3DEP DEM + staged HAND (`data/fimbox_out/`) | Rebuilt by the notebook when `REGEN_FIM=1` (needs `fimbox`) | NWM / USGS 3DEP, via FIMbox |
 

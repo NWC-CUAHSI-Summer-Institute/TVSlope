@@ -9,7 +9,7 @@
 import os, sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parents[1]   # repo root (this script lives in code/)
 DATA = ROOT / "data"
 
 # FIMBench benchmark events used by the study (benchmark HUC8, event date).
