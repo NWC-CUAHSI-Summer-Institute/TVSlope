@@ -1,4 +1,4 @@
-# TVSlope — Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope
+# Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope
 
 The uncalibrated NOAA-OWP HAND synthetic rating curve is Manning (`Q ∝ √S`), so the river **slope** `S` is a
 first-order control on the mapped flood extent. This repository asks whether replacing that slope with a
@@ -10,10 +10,10 @@ and scores every slope treatment against FIMBench.
 
 ```
 code/TV_Slope_FIM.ipynb        the study notebook (run this)
-code/tvslope_src/engine/       our analysis modules (imported by the notebook)
-code/tvslope_src/fimbox_ext/   our FIMbox-wrapping drivers (build HAND + generate the FIM)
-data/                          small derived data, bundled so the notebook runs after clone (see "Data")
-get_data.py                    downloads the large datasets that are not bundled (FIMBench, SWORD)
+code/tvslope_src/engine/       analysis modules 
+code/tvslope_src/fimbox_ext/   build HAND + generate the FIM
+data/                          small derived data
+get_data.py                    downloads the large datasets that are not provided (FIMBench, SWORD)
 ```
 
 ## Run it
