@@ -56,7 +56,7 @@ cache automatically on the first run.
 - **SWORD v17b** (SWOT River Database) — Altenau, E. H., et al. (2021). The SWOT Mission River Database (SWORD):
   A Global River Network for Satellite Data Products. *Water Resources Research.*
   https://doi.org/10.1029/2021WR030054 · data: https://doi.org/10.5281/zenodo.14727521 · https://www.swordexplorer.com/
-- **IRIS-SWORD combined static slope** — Chen et al. (2025), *Scientific Data.*
+- **IRIS-SWORD combined static slope** — Chen, Y., Cohen, S., Baruah, A., Devi, D., Dhital, S., Tian, D., & Munasinghe, D. (2025). Merging Remote Sensing Derived River Slope Datasets with High-Resolution Hydrofabrics for the United States. Scientific Data, 12(1), 1657.
 - **National Water Model** (retrospective + operational short-range forecast) — NOAA Office of Water Prediction.
 - **USGS NWIS** gauge data and **3DEP** 10 m DEM — U.S. Geological Survey.
 - **FIMBench** benchmark flood maps — Surface Dynamics Modeling Lab, University of Alabama.
