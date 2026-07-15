@@ -79,10 +79,22 @@ USGS gauge series download an cache automatically on the first run.
 
 > **License note.** FIMbox is **GPL-3.0**. Because the drivers in `code/tvslope_src/fimbox_ext/` build on FIMbox,
 > they are likewise distributed under **GPL-3.0**. Add a top-level `LICENSE` file before publishing more widely.
-
-> Upstream tools and datasets belong to their respective authors.
+---
 ---
 
+## Team
+
+| Name | Institution | GitHub |
+|---|---|---|
+| Zih-Syun Chen | University of Houston | [@zixunn](https://github.com/zixunn) |
+| Sebastian Marshall | Johns Hopkins University | [@rushmarshall](https://github.com/rushmarshall) |
+| Pitamber Wagle | Brigham Young University | [@Pitamberwagle](https://github.com/Pitamberwagle) |
+| Reza Jamshidi | Northeastern University | [@Reza-Jamshidi](https://github.com/Reza-Jamshidi) |
+
+
+**Theme leads:** Sagy Cohen and Anupal Baruah, University of Alabama
+
+---
 <div align="center">
 
 **CUAHSI Summer Institute 2026** &nbsp;·&nbsp; **Team Slippery Slope**
