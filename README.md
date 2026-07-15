@@ -11,8 +11,8 @@
 ![Treatments](https://img.shields.io/badge/slope_treatments-4-b2182b?style=flat-square)
 
 
-The uncalibrated NOAA-OWP HAND synthetic rating curve is Manning (`Q ∝ √S`), so the river **slope** `S` is a
-first-order control on the mapped flood extent. This repository asks whether replacing that slope with a
+The uncalibrated NOAA-OWP HAND synthetic rating curve is Manning (`Q ∝ √S`), so the river **slope** `S` is an
+important control on the mapped flood extent. This repository asks whether replacing that slope with a
 static-satellite product (IRIS-SWORD, SWOT) or a **time-varying gauge-derived `S(Q)`** measurably changes HAND-FIM
 skill, and where (by hydraulic regime) it matters. One notebook runs the whole study end to end over six reaches
 and scores every slope treatment against FIMBench.
