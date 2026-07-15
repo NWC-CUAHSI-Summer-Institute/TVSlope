@@ -37,7 +37,16 @@ conda env create -f environment.yml && conda activate slope   # geopandas, raste
 python get_data.py                                             # FIMBench + SWORD (large; not in the repo)
 TV_Slope_FIM.ipynb
 ```
-USGS gauge series download an cache automatically on the first run.
+The notebooks also use three HAND-FIM tools from the [SDML lab](https://github.com/sdmlua). Install the ones you
+need:
+
+```bash
+pip install fimeval        # query + download FIMBench benchmarks  (needed by study_area / timevary)
+pip install fimserve       # HAND-FIM staging and serving          (needed to (re)generate FIM)
+pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (needed to (re)generate FIM)
+```
+
+## Workflow
 
 ![Workflow](figure/workflow.png)
 
