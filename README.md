@@ -6,7 +6,6 @@
 
 ![Status](https://img.shields.io/badge/status-active-2ea44f?style=flat-square)
 ![Institute](https://img.shields.io/badge/CUAHSI-Summer_Institute_2026-2166ac?style=flat-square)
-![Compute](https://img.shields.io/badge/compute-CIROH_JupyterHub-e08214?style=flat-square)
 ![Reaches](https://img.shields.io/badge/study_reaches-6-9b59b6?style=flat-square)
 ![Treatments](https://img.shields.io/badge/slope_treatments-4-b2182b?style=flat-square)
 
