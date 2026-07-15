@@ -68,8 +68,6 @@ cache automatically on the first run.
 | --- | --- | --- |
 | `code/tvslope_src/engine/*.py` | Our own code | Written for this study. `timevarying_slope.py` adapts the TimeVariantSlope `S(Q)` method; `fim_reach.py` and `fim_eval.py` reimplement the RiverJoin river-matching and FIMeval scoring concepts. |
 | `code/tvslope_src/fimbox_ext/*.py` | **Built on FIMbox** (github.com/sdmlua/fimbox) | Our drivers wrap FIMbox: observation-calibration disabled, per-treatment slope injection, a branch-0 tributary gap-filler, and NWM-forecast forcing. Each file carries a `Built on FIMbox` header noting the source and the change. |
-| FIMbox engine (not vendored) | github.com/sdmlua/fimbox | Called from source, **unmodified**; installed separately. |
-| NOAA-OWP/inundation-mapping (not vendored) | github.com/NOAA-OWP/inundation-mapping | The HAND-FIM method FIMbox implements; not modified. |
 
 ### Upstream tools and licenses
 
