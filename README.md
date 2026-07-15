@@ -1,3 +1,4 @@
+<div align="center">
 # Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope
 
 ### Time-Varying River Slope in Operational HAND Flood Inundation Mapping
@@ -15,6 +16,8 @@ first-order control on the mapped flood extent. This repository asks whether rep
 static-satellite product (IRIS-SWORD, SWOT) or a **time-varying gauge-derived `S(Q)`** measurably changes HAND-FIM
 skill, and where (by hydraulic regime) it matters. One notebook runs the whole study end to end over six reaches
 and scores every slope treatment against FIMBench.
+
+</div>
 
 ## What's here
 
