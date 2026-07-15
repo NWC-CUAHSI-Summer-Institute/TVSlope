@@ -19,31 +19,20 @@ OUT  = ROOT/"output_final"
 TAB, FIG, DOSS, PAP = OUT/"tables", OUT/"figures", OUT/"dossier", OUT/"paper"
 for _d in (TAB, FIG, DOSS, PAP): _d.mkdir(parents=True, exist_ok=True)
 AREAS = [
-    # Big Sioux 74295200111 -- BACKWATER (rho(slope,stage) = -0.41). The FIMBench tile that covers the reach is the
-    # 2024-06-23 PlanetScope observed flood, which falls past the NWM retrospective (ends 2023-01-31). Its FIM is
-    # therefore driven by the NWM OPERATIONAL (short-range) FORECAST discharge for that day (fimbox getNWMforecast ->
-    # discharge-inputs/operational_flood.csv), NOT a USGS gauge, so the FIM and the benchmark are the same 2024 event.
     dict(reach="74295200111", huc="10170203", river="Big Sioux River",  bench_date="2024-06-23",
          event="PSS_20240623T172530_962650W425825N",
          dyn="backwater", role="backwater",  gauge_paired=False, gup="06483950", gdn="06485500", gq="06483950", csi_ok=True, fim_driver="operational"),
-    # Little Sioux 74295100321 -- KINEMATIC (rho = +0.63). No on-reach USGS gauge -> not gauge-paired. FIM HAND is
-    # built in the reach's true HUC 10230003 (the same HUC as its 2018-06 high-water-mark benchmark). The HUC holds
-    # many HWM tiles, so the exact event subdir is given explicitly. (DEM re-fetched: original 3DEP tile was all-nodata.)
     dict(reach="74295100321", huc="10230003", river="Little Sioux River", bench_date="2018-06-10",
          event="HWM_20180615_20180610_952917W425035N",
          dyn="kinematic", role="kinematic",  gauge_paired=False, gup=None,      gdn=None,      gq=None,      csi_ok=True, fim_driver="nwm"),
     dict(reach="74270100061", huc="07140105", river="Mississippi River", bench_date="2017-05-04", bench_huc="08010300",
          dyn="backwater", role="backwater",   gauge_paired=False, gup="07020850", gdn="07022000", gq="07022000", csi_ok=True, fim_driver="nwm"),
     # Ohio below McAlpine Dam = a gauge-paired reach (with Illinois 74282100101) -> the backwater time-varying S(Q) demo
-    # (backwater, R2=0.99). Its 2025 flood is past the NWM retrospective, so its FIM is driven by the NWM operational
-    # (short-range) forecast discharge for that day (not a USGS gauge), keeping the whole evaluation NWM-forced.
+    # (backwater, R2=0.99). 
     dict(reach="74267300251", huc="05140101", river="Ohio River",       bench_date="2025-04-12",
          dyn="backwater", role="backwater",   gauge_paired=True, gup="03293551", gdn="03294500", gq="03294500", csi_ok=True, fim_driver="operational"),
     dict(reach="74282100111", huc="07130011", river="Illinois River",   bench_date="2016-01-04",
          dyn="kinematic", role="kinematic",   gauge_paired=False, gup=None,       gdn="05585500", gq="05585500", csi_ok=True, fim_driver="nwm"),
-    # Illinois 74282100101 -- kinematic, GAUGE-PAIRED (twin gauges 05586100 / 05586300, S(Q) power-law R2=0.89);
-    # restores a kinematic time-varying S(Q) demo alongside the backwater Ohio. The 2016 flood sits at the UPSTREAM
-    # end of the reach, so the gauge time-varying FIM is driven by the upstream gauge 05586100 (~3200 m3/s).
     dict(reach="74282100101", huc="07130011", river="Illinois River",    bench_date="2016-01-04",
          dyn="kinematic", role="gauge-paired", gauge_paired=True,  gup="05586100", gdn="05586300", gq="05586100", csi_ok=True,  fim_driver="nwm"),
 ]
@@ -56,8 +45,9 @@ TREAT_LABEL = {"baseline": "hydrofabric", "hfirissword_new": "IRIS-SWORD", "swot
 TREAT_COLOR = {"baseline": "#777777", "hfirissword_new": "#33bbee", "swot_median": "#0077bb",
                "swot_floodstage": "#ee3377", "swot_maxwse": "#ee7733", "gauge_timevarying": "#009988"}
 DYN_COLOR   = {"kinematic": "#0077bb", "backwater": "#ee7733", "stable": "#999999"}
-_pg = pd.read_csv(DATA/"paired_reach_SWOT_gage"/"paired_reach_SWOT_gage.csv",
-                  usecols=["gage_id", "gage_name", "gage_latitude", "gage_longitude"],
+_gage = DATA/"paired_reach_SWOT_gage"/"gauge_latlon.csv"          # small bundled coord extract
+if not _gage.exists(): _gage = DATA/"paired_reach_SWOT_gage"/"paired_reach_SWOT_gage.csv"   # full table fallback
+_pg = pd.read_csv(_gage, usecols=["gage_id", "gage_name", "gage_latitude", "gage_longitude"],
                   dtype={"gage_id": str}, low_memory=False)
 for _c in ["gage_latitude", "gage_longitude"]: _pg[_c] = pd.to_numeric(_pg[_c], errors="coerce")
 GC = _pg.drop_duplicates("gage_id").set_index("gage_id")[["gage_name", "gage_latitude", "gage_longitude"]]
