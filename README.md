@@ -43,7 +43,7 @@ cache automatically on the first run.
 
 | Data | How to get it | Source |
 | --- | --- | --- |
-| FIMBench benchmark flood maps (`data/FIMBench/`) | `python get_data.py` (uses `fimeval`) | SDML **FIMbench** |
+| FIMBench benchmark flood maps (`data/FIMBench/`) | `python get_data.py` (uses `fimeval`) | [FIMbench] (https://tethys.ciroh.org/apps/fimbench-gui/) |
 | SWORD v17b river network (`data/SWORD_v17b_gpkg/na_sword_reaches_v17b.gpkg`) | `python get_data.py` prints the download link; place the GeoPackage in that folder | **SWORD v17**, Zenodo / swordexplorer |
 | USGS gauge discharge & stage (`data/discharge/`, `data/twin_gauge/`) | Automatic — cached on the first notebook run (`dataretrieval`) | USGS NWIS |
 | NWM hydrofabric + 3DEP DEM + staged HAND (`data/fimbox_out/`) | Rebuilt by the notebook when `REGEN_FIM=1` (needs `fimbox`) | NWM / USGS 3DEP, via FIMbox |
