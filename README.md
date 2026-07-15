@@ -80,7 +80,7 @@ USGS gauge series download an cache automatically on the first run.
 > **License note.** FIMbox is **GPL-3.0**. Because the drivers in `code/tvslope_src/fimbox_ext/` build on FIMbox,
 > they are likewise distributed under **GPL-3.0**. Add a top-level `LICENSE` file before publishing more widely.
 
-Upstream tools and datasets belong to their respective authors.
+> Upstream tools and datasets belong to their respective authors.
 ---
 
 <div align="center">
