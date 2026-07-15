@@ -58,3 +58,9 @@ code/output/
 # keep the small curated inputs
 !data/slope_treatments.csv
 !data/study_area_gauges.csv
+
+# --- large / fetchable data not committed (small extracts under data/ ARE committed) ---
+data/paired_reach_SWOT_gage/paired_reach_SWOT_gage.csv
+!data/paired_reach_SWOT_gage/gauge_latlon.csv
+data/discharge/
+data/twin_gauge/

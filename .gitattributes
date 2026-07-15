@@ -1,13 +1,6 @@
-# Store large binary geodata with Git LFS (install once: `git lfs install`).
-# GitHub rejects individual files > 100 MB unless they are LFS-tracked.
-*.tif   filter=lfs diff=lfs merge=lfs -text
-*.tiff  filter=lfs diff=lfs merge=lfs -text
-*.gpkg  filter=lfs diff=lfs merge=lfs -text
-*.parquet filter=lfs diff=lfs merge=lfs -text
-*.nc    filter=lfs diff=lfs merge=lfs -text
-
-# Notebooks + text stay as normal git objects (diffable).
+# Text files stay as normal, diffable git objects.
 *.ipynb text
 *.md    text
 *.py    text
 *.csv   text
+# Large source datasets (SWORD, FIMBench, staged HAND) are NOT committed -- fetch them (see README, get_data.py).
