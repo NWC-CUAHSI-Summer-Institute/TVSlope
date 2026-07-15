@@ -2,10 +2,9 @@
 
   # Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope
 
-### Time-Varying River Slope in Operational HAND Flood Inundation Mapping
+### Innovation in Flood Inundation Mapping for Operational Forecasting
 
-**CUAHSI Summer Institute 2026** · Innovation in Flood Inundation Mapping for Operational Forecasting
-
+**CUAHSI Summer Institute 2026** · 
 ![Status](https://img.shields.io/badge/status-active-2ea44f?style=flat-square)
 ![Institute](https://img.shields.io/badge/CUAHSI-Summer_Institute_2026-2166ac?style=flat-square)
 ![Reaches](https://img.shields.io/badge/study_reaches-6-9b59b6?style=flat-square)
