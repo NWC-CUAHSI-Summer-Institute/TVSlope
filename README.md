@@ -21,11 +21,9 @@ get_data.py                    downloads the large datasets that are not bundled
 ```bash
 conda env create -f environment.yml && conda activate slope   # geopandas, rasterio, dataretrieval, ...
 python get_data.py                                             # FIMBench + SWORD (large; not in the repo)
-jupyter nbconvert --to notebook --execute --inplace code/TV_Slope_FIM.ipynb
+TV_Slope_FIM.ipynb
 ```
-
-By default the notebook rebuilds every FIM from the FIMbox source (`REGEN_FIM=1`, ~20 min; needs `fimbox`
-installed). Set `REGEN_FIM=0` to skip the rebuild and reuse cached extent rasters. USGS gauge series download and
+USGS gauge series download and
 cache automatically on the first run.
 
 ## Data
