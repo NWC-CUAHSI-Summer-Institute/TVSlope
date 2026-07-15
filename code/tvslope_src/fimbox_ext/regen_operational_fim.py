@@ -1,4 +1,4 @@
-# NWM operational-forecast FIM for out-of-retrospective events. Built on FIMbox (github.com/sdmlua/fimbox).
+# NWM operational-forecast FIM. Built on FIMbox (github.com/sdmlua/fimbox).
 import os, sys, time, shutil, traceback, warnings
 warnings.filterwarnings("ignore")
 os.environ.pop("PROJ_DATA", None); os.environ.pop("PROJ_LIB", None)

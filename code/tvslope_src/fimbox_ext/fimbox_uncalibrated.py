@@ -1,4 +1,4 @@
-# Uncalibrated FIMbox HAND-FIM driver (calibration off, slope injected). Built on FIMbox (github.com/sdmlua/fimbox).
+# Uncalibrated FIMbox HAND-FIM driver. Built on FIMbox (github.com/sdmlua/fimbox).
 from __future__ import annotations
 
 import argparse
