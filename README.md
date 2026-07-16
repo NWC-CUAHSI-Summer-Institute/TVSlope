@@ -51,7 +51,7 @@ pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (need
 
 ## Data
 
-**Provided in `data/` (you do not download).**
+**Provided in `data/`**
 
 | File | What it is | Provenance |
 | --- | --- | --- |
