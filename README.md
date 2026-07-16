@@ -32,7 +32,7 @@ code/get_data.py               downloads the large datasets that are not provide
 ## Run it
 
 ```bash
-conda env create -f environment.yml && conda activate slope   # geopandas, rasterio, dataretrieval, ...
+conda env create -f environment.yml && conda activate slope   
 python code/get_data.py                                             # FIMBench + SWORD (large; not in the repo)
 TV_Slope_FIM.ipynb
 ```
@@ -62,7 +62,7 @@ pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (need
 | `data/fimbox_bankfull_2yr_cms.parquet` | 2-year recurrence (bankfull) discharge per NWM feature_id | NWM recurrence flows |
 | `data/us_states.gpkg` | US state boundaries for the CONUS map | Public US state boundaries |
 
-**Fetched by code — not in the repo. Run `python code/get_data.py`.**
+**Fetched by code — Run `python code/get_data.py`.**
 
 | Data | How to get it | Source |
 | --- | --- | --- |
