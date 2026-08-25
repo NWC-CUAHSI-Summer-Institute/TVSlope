@@ -44,6 +44,12 @@ Everything staged is real data already fetched from the operational sources: FIM
 (sdmlua fimeval), flood extents from NOAA-OWP inundation-mapping on the OWP HAND 4.9.9.0 cache, and the
 Harlan et al. (2026) SWOT-gauge pairing (USGS ScienceBase, 10.5066/P1FE9W9E).
 
+## Environment
+
+The repository  already covers what  needs,  included, so
+Step 7 runs in the  environment as it stands. One cell of the notebook draws a CONUS context map
+with , which  does not list. Install it alongside, or skip that one cell.
+
 ## Known limits of this branch
 
 - `src/areas.py`, `src/benchmarks.py` and `stage_local_root.py` hard-code paths under the author's
