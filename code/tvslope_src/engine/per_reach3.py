@@ -141,4 +141,71 @@ def twin_series(row):
     if len(dis): m = m.merge(dis.rename(columns={"datetime": "date"})[["date", "discharge_cms"]], on="date", how="left")
     else: m["discharge_cms"] = np.nan
     return m.sort_values("date")
-P3  = SimpleNamespace(GC=GC, discharge=discharge, stage_series=stage_series, datum=datum, datum_info=datum_info, wse_series=wse_series, twin_series=twin_series)
+
+
+# --- SWOT per-pass QC and sign correction ------------------------------------  # sebastian update
+# The SWOT slope treatments are built from this. It reads the committed Hydrocron extract
+# (data/swot_hydrocron_study_reaches.csv) so it runs without the 100 MB paired-gauge table, and falls
+# back to that table when it is staged and a reach is missing from the extract.
+_SWOT_SRC = [DATA/"swot_study_area_passes.csv",              # the six study reaches, with xtrk_dist
+             DATA/"swot_hydrocron_study_reaches.csv",        # the wider SWOT reach set
+             DATA/"paired_reach_SWOT_gage"/"paired_reach_SWOT_gage.csv"]   # full table, if staged
+_swot_cache = {}
+
+def _swot_table():
+    if "df" in _swot_cache: return _swot_cache["df"]
+    frames = []
+    for f in _SWOT_SRC:
+        if not f.exists(): continue
+        try:
+            d = pd.read_csv(f, low_memory=False)
+        except Exception:
+            continue
+        tcol = next((c for c in ("time_str", "SWOT_time", "time") if c in d.columns), None)
+        if tcol is None or "reach_id" not in d.columns: continue
+        d = d.rename(columns={tcol: "_t"})
+        d["reach_id"] = d.reach_id.astype("float").astype("int64").astype(str)
+        frames.append(d)
+    if frames:
+        # Sources overlap in reach coverage but not in columns; earlier sources win on a duplicate
+        # (reach, time) because they are the curated extracts.
+        df = pd.concat(frames, ignore_index=True).drop_duplicates(subset=["reach_id", "_t"], keep="first")
+    else:
+        df = pd.DataFrame()
+    _swot_cache["df"] = df
+    return df
+
+def swot_clean(reach):
+    """Quality-screened, sign-corrected SWOT passes for one reach, with `slope_c` in m/m.
+
+    The screen is the mission's own quality flags (reach_q, dark_frac, ice_clim_f, xovr_cal_q), a
+    physical slope band, and a sign correction: SWOT reports slope with a sign convention that flips
+    with the pass direction, so the reach median sets the sign and the series is folded onto it.
+
+    The outlier cut keeps slopes within 0.1x..10x the reach median (Lui 2026). That preserves the
+    natural per-pass variability -- the low-slope dips at high flow that the whole point of a
+    time-varying slope -- where a tight MAD band over-clipped tightly clustered reaches and made the
+    series look artificially flat.
+    """
+    t = _swot_table()
+    if not len(t): return pd.DataFrame()
+    s = t[t.reach_id == str(reach)].copy()
+    if not len(s): return pd.DataFrame()
+    s["date"] = pd.to_datetime(s["_t"], utc=True, errors="coerce").dt.tz_localize(None)
+    s = s.dropna(subset=["slope", "date"])
+    s = s[(s.wse.fillna(0) > -1e9) & (s.reach_q.fillna(9) <= 1) & (s.dark_frac.fillna(0) <= .5)
+          & (s.ice_clim_f.fillna(0) == 0) & (s.xovr_cal_q.fillna(0) <= 1)]
+    if "xtrk_dist" in s.columns and s.xtrk_dist.notna().any():   # absent from the Hydrocron extract
+        s = s[s.xtrk_dist.abs().between(10000, 60000) | s.xtrk_dist.isna()]
+    s = s[s.slope.abs().between(1e-6, 1e-2)]
+    if not len(s): return s.assign(slope_c=[])
+    sign = np.sign(np.median(s.slope))
+    s["slope_c"] = s.slope*sign
+    if "slope2" in s.columns: s["slope2c"] = s.slope2*sign
+    s = s[s.slope_c > 0].sort_values("date")
+    if len(s) >= 8:
+        med = s.slope_c.median()
+        if med > 0: s = s[s.slope_c.between(0.1*med, 10*med)]
+    return s
+
+P3  = SimpleNamespace(GC=GC, discharge=discharge, stage_series=stage_series, datum=datum, datum_info=datum_info, wse_series=wse_series, twin_series=twin_series, swot_clean=swot_clean)
