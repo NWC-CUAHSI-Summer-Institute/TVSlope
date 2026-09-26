@@ -1,4 +1,4 @@
-"""3-gauge study-reach finder (self-contained; used by work6_3DHRS.ipynb).
+"""3-gauge study-reach finder (self-contained; used by 05_work6_3DHRS.ipynb).
 
 For each SWOT reach it seeks THREE USGS gauges:
     * on-reach gauge  (<=1 km from the SWOT reach geometry)  -> DISCHARGE Q

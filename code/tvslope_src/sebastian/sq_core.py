@@ -2,13 +2,13 @@
 
 WHY THIS FILE EXISTS
 --------------------
-`src/timevarying_slope.py` (TV) is the production S(Q) engine, but it imports `per_reach3`,
+`sebastian/timevarying_slope.py` (TV) is the production S(Q) engine, but it imports `per_reach3`,
 which reads two of Zixun's local CSVs *at module import time* under
 ROOT = /Users/zixun/2026SI/slipperyslope. On any other machine `import timevarying_slope`
 raises before a single function runs, so the Step 7 cells cannot call TV at all.
 
 This module re-implements the exact same chain against the public USGS NWIS API, caching
-every response to CSV under `notebooks/sq_cache/`. It reproduces TV's published fits to
+every response to CSV under `tvslope_src/sebastian/sq_cache/`. It reproduces TV's published fits to
 three significant figures (see `verify_against_notebook()`), so it is a faithful mirror,
 not a second method.
 
@@ -434,7 +434,7 @@ def cite(*keys: str) -> str:
 
 
 # --------------------------------------------------------------------------------------
-# Cached USGS NWIS access. Every network response lands in notebooks/sq_cache/ as CSV, so
+# Cached USGS NWIS access. Every network response lands in tvslope_src/sebastian/sq_cache/ as CSV, so
 # the whole section re-runs offline and headless.
 # --------------------------------------------------------------------------------------
 _SITE: dict[str, dict] = {}

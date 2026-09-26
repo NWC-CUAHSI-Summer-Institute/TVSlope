@@ -1,6 +1,6 @@
-"""Stage the data tree `work_0607.ipynb` expects, so it runs on this machine instead of Zixun's.
+"""Stage the data tree `code/07_sebastian_sq_study.ipynb` expects, so it runs on this machine instead of Zixun's.
 
-The notebook and `src/*.py` hard-code
+The notebook and `tvslope_src/sebastian/*.py` hard-code
 
     ROOT = Path("/Users/zixun/2026SI/slipperyslope")
 
