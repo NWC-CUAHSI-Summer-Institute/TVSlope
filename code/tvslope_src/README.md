@@ -1,10 +1,14 @@
 # tvslope_src — study code for TV_Slope_FIM
 
-Python code behind `TV_Slope_FIM.ipynb` (Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope).
+Python code behind `06_TV_Slope_FIM.ipynb` (Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope).
 
 - `engine/` — the analysis: study configuration, gauge discharge/stage/WSE series, time-varying
-  slope `S(Q)`, reach↔NWM matching, FIM-vs-benchmark scoring, the AOI map figures, and FIM output lookup.
+  slope `S(Q)`, reach↔NWM matching, FIM-vs-benchmark scoring, the AOI map figures, FIM output lookup,
+  and `datum.py`, the vertical-datum layer every height passes through.
 - `fimbox_ext/` — the FIMbox-wrapping drivers that build the HAND and generate the FIM flood extents.
+- `sebastian/` — the frozen parallel engine behind `code/07_sebastian_sq_study.ipynb`, plus `sq_core.py`
+  (the S(Q) chain rebuilt against the public USGS NWIS API) and `stage_local_root.py`. Kept as it was so
+  that notebook's committed outputs stay reproducible; it is **not** the engine the main study runs on.
 
 ## Source tools
 

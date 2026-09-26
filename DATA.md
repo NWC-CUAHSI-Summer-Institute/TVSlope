@@ -14,11 +14,11 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
 
 | Notebook | Reads (inputs) | Writes (outputs) |
 |---|---|---|
-| `work6_3DHRS.ipynb` | `data/slope_treatments.csv`; `data/SWORD_v17b_gpkg/…` (6 reaches, queried by id); `data/FIMBench/<6 events>/*_BM.tif` + `*_AOI.gpkg`; `data/fimbox_out/HUC{05140101,07130011,07140105,10170203,10230003}/` → `fim-outputs/*.tif`, `discharge-inputs/*.csv`, `watershed-data/*_subset_streams.gpkg`, `*catchments_proj_subset.gpkg`, `branches/*/hydroTable_*.csv.orig`; `data/paired_reach_SWOT_gage/…` (coords only); `data/twin_gauge/`, `data/discharge/` (gauge cache); `data/us_states.gpkg` | `output_final/` (figures PNG+SVG, tables, dossier) |
-| `gauge_study.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/us_states.gpkg`; USGS NWIS (auto via `dataretrieval`) | `output_gauge/` |
-| `study_area.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/benchmark_domain_t123hwm.gpkg`; `data/GDW/` (dams); FIMBench (auto-downloaded via `fimeval`) | `output_study_area/` |
-| `timevary_slope.ipynb` | `data/SWORD_v17b_gpkg/…`; `data/FIMBench/…`; `data/FIMHF_IRIS_new.csv`; `data/discharge/`, `data/twin_gauge/`; `data/fimbox_out/HUC*/` (18 HUCs, cache) | `output_study_area/timevary/` |
-| `swot_geoid_slope.ipynb` | `data/swot_hydrocron_study_reaches.csv`; `data/swot_study_reach_nodes.csv`; `data/swot_study_reaches_sword.csv` (all committed — no SWORD download needed); PROJ geoid grids (EGM2008 / EGM96 / NAVD88, fetched from the PROJ CDN on first use and cached) | `output_final/tables/swot_datum_verification.csv`, `output_final/tables/geoid_slope_sensitivity.csv`, `output_final/figures/geoid_datum_slope.{png,svg}` |
+| `05_work6_3DHRS.ipynb` | `data/slope_treatments.csv`; `data/SWORD_v17b_gpkg/…` (6 reaches, queried by id); `data/FIMBench/<6 events>/*_BM.tif` + `*_AOI.gpkg`; `data/fimbox_out/HUC{05140101,07130011,07140105,10170203,10230003}/` → `fim-outputs/*.tif`, `discharge-inputs/*.csv`, `watershed-data/*_subset_streams.gpkg`, `*catchments_proj_subset.gpkg`, `branches/*/hydroTable_*.csv.orig`; `data/paired_reach_SWOT_gage/…` (coords only); `data/twin_gauge/`, `data/discharge/` (gauge cache); `data/us_states.gpkg` | `output_final/` (figures PNG+SVG, tables, dossier) |
+| `01_gauge_study.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/us_states.gpkg`; USGS NWIS (auto via `dataretrieval`) | `output_gauge/` |
+| `02_study_area.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/benchmark_domain_t123hwm.gpkg`; `data/GDW/` (dams); FIMBench (auto-downloaded via `fimeval`) | `output_study_area/` |
+| `04_timevary_slope.ipynb` | `data/SWORD_v17b_gpkg/…`; `data/FIMBench/…`; `data/FIMHF_IRIS_new.csv`; `data/discharge/`, `data/twin_gauge/`; `data/fimbox_out/HUC*/` (18 HUCs, cache) | `output_study_area/timevary/` |
+| `03_swot_geoid_slope.ipynb` | `data/swot_hydrocron_study_reaches.csv`; `data/swot_study_reach_nodes.csv`; `data/swot_study_reaches_sword.csv` (all committed — no SWORD download needed); PROJ geoid grids (EGM2008 / EGM96 / NAVD88, fetched from the PROJ CDN on first use and cached) | `output_final/tables/swot_datum_verification.csv`, `output_final/tables/geoid_slope_sensitivity.csv`, `output_final/figures/geoid_datum_slope.{png,svg}` |
 
 **Sizes that matter** (`du -sh`):
 
@@ -44,10 +44,10 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
   .gitignore  .gitattributes  # provided here (LFS for *.tif/*.tiff/*.nc only)
   environment.yml             # conda env
   README.md  DATA.md
-  code/                       # the 3 notebooks (or rename to notebooks/)
-    work6_3DHRS.ipynb
-    timevary_slope.ipynb
-    study_area.ipynb
+  code/                       # every notebook (numbered in run order) and every module
+    01_gauge_study.ipynb  ...  07_sebastian_sq_study.ipynb
+    get_data.py
+    tvslope_src/{engine,fimbox_ext,sebastian}/
   data/                       # inputs (see tiers) — small tables in git, cache via LFS, big layers external
     slope_treatments.csv
     study_area_gauges.csv
@@ -58,8 +58,8 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
   output_final/               # work6 outputs (regenerated; commit if you want them viewable on GitHub)
 ```
 
-Notebook paths need **no editing** — they already use `ROOT/"data"/…`. If you move the notebooks into a
-`notebooks/` folder, the resolver still works (it walks up to `.slope_root`).
+Notebook paths need **no editing** — they already use `ROOT/"data"/…`, and the resolver walks up to the
+`.slope_root` marker, so it keeps working wherever the notebooks sit.
 
 ---
 
@@ -73,7 +73,9 @@ Notebook paths need **no editing** — they already use `ROOT/"data"/…`. If yo
 and the three SWOT/SWORD extracts that make the vertical-datum notebook reproducible without the
 3.7 GB SWORD download: `data/swot_hydrocron_study_reaches.csv` (1.1 MB, the Hydrocron pull for the
 study reaches), `data/swot_study_reach_nodes.csv` (680 KB, the SWORD node chain — coordinates and
-`dist_out` — for those reaches), `data/swot_study_reaches_sword.csv` (12 KB, reach centroids).
+`dist_out` — for those reaches), `data/swot_study_reaches_sword.csv` (12 KB, reach centroids), and
+`data/study_gauge_datums.csv` (10 KB, each study gauge's `alt_va`, its NWIS `alt_datum_cd`, and
+the elevation converted onto NAVD88).
 Everything else is fetched (USGS via `dataretrieval`; SWORD / FIMBench downloads) or generated (NWM / staged HAND).
 
 ### Tier B — commit via Git LFS (the curated work6 cache, so `git clone` runs work6)
@@ -85,8 +87,8 @@ the quota if you keep full-resolution benchmarks.)
 ### Tier C — host externally + download script (everything heavy)
 Full `SWORD_v17b_gpkg`, full `FIMBench`, full `fimbox_out`, `IRIS_*`, `GDW`, `fimserv`. Upload a single
 `slope_data.zip` to **Zenodo** (gets a DOI, ideal for a paper) or Google Drive / S3, and ship a
-`scripts/download_data.sh` that fetches + unpacks it into `data/`. `study_area.ipynb` and `timevary_slope.ipynb`
-need this tier (their inputs are tens of GB); `work6_3DHRS.ipynb` does not if you ship Tier B.
+`scripts/download_data.sh` that fetches + unpacks it into `data/`. `02_study_area.ipynb` and `04_timevary_slope.ipynb`
+need this tier (their inputs are tens of GB); `05_work6_3DHRS.ipynb` does not if you ship Tier B.
 
 ---
 
@@ -147,7 +149,7 @@ git clone <repo> && cd <repo>
 git lfs pull                              # fetch the LFS binaries
 conda env create -f environment.yml && conda activate slope
 # work6 runs on the committed Tier-B cache:
-jupyter nbconvert --to notebook --execute --inplace code/work6_3DHRS.ipynb
+jupyter nbconvert --to notebook --execute --inplace code/05_work6_3DHRS.ipynb
 # study_area / timevary additionally need the Tier-C archive:
 bash scripts/download_data.sh             # (fetches SWORD/FIMBench/fimbox_out into data/)
 ```

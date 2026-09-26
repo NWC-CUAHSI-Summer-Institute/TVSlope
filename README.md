@@ -38,36 +38,41 @@ a **static-satellite** baseline (IRIS-SWORD; Chen et al., 2025), three **SWOT**-
 
 ## What's here
 
+Everything executable lives under `code/`. The notebooks are numbered in the order they are meant
+to be run, and every Python module sits under the single `code/tvslope_src/` tree.
+
 ```
-code/TV_Slope_FIM.ipynb        the consolidated study notebook (run this)
-code/work6_3DHRS.ipynb         the focused six-reach study and manuscript figures
-code/timevary_slope.ipynb      the time-varying gauge S(Q) method over the full reach selection
-code/study_area.ipynb          FIM reach selection (FIMBench coverage + gauge triplets)
-code/gauge_study.ipynb         CONUS-wide gauge-availability survey (gauges only, not FIM)
-code/swot_geoid_slope.ipynb    vertical datum: SWOT WSE on the geoid, and slope's datum sensitivity
-code/tvslope_src/engine/       analysis modules
-code/tvslope_src/fimbox_ext/   build HAND + generate the FIM
-code/get_data.py               downloads the large datasets that are not provided (FIMBench, SWORD)
-notebooks/work_0607.ipynb      Sebastian's parallel S(Q) notebook  (see README_SEBASTIAN.md)
-notebooks/sq_core.py           the S(Q) chain rebuilt against the public USGS NWIS API
-src/                           the modules that notebooks/work_0607.ipynb imports
+code/
+  01_gauge_study.ipynb         CONUS-wide gauge-availability survey (gauges only, not FIM)
+  02_study_area.ipynb          FIM reach selection (FIMBench coverage + gauge triplets)
+  03_swot_geoid_slope.ipynb    vertical-datum QC: which datum each height source is on
+  04_timevary_slope.ipynb      the time-varying gauge S(Q) method over the full reach selection
+  05_work6_3DHRS.ipynb         the focused six-reach study and manuscript figures
+  06_TV_Slope_FIM.ipynb        the consolidated study, end to end  (run this one)
+  07_sebastian_sq_study.ipynb  Sebastian's parallel S(Q) reading   (see README_SEBASTIAN.md)
+  get_data.py                  downloads the large datasets that are not provided (FIMBench, SWORD)
+  tvslope_src/
+    engine/                    the analysis modules: datum, study config, S(Q), scoring, figures
+    fimbox_ext/                the FIMbox-wrapping drivers: build HAND + generate the FIM
+    sebastian/                 the frozen parallel engine behind notebook 07, plus sq_core.py
 data/                          small derived data
 output_final/                  figures and tables written by the notebooks
 ```
 
+> Numbers 01–02 select the reaches, 03 checks the vertical datums the later steps depend on, 04–06 are
+> the FIM analysis, and 07 is an independent second reading of the same question.
+
 ## Notebooks
 
-The first two notebooks are **reach-selection** steps; the rest are the **FIM analysis**.
-
-| Notebook | Scope | What it does |
-|---|---|---|
-| [`code/gauge_study.ipynb`](code/gauge_study.ipynb) | **Gauges only — not FIM** | A standalone survey of USGS gauge availability across the entire CONUS SWORD network: which reaches carry a same-river upstream/on-reach/downstream gauge triplet that can form a water-surface slope. Independent of flood-inundation mapping and FIMBench. |
-| [`code/study_area.ipynb`](code/study_area.ipynb) | **FIM reach selection** | Selects the reaches used in the FIM study: those covered by a **FIMBench** benchmark (**Tier 1–3** or high-water-mark) **and** carrying a usable gauge triplet, so both the benchmark and the paired-gauge slope are available. Benchmarks are auto-downloaded via `fimeval`. |
-| [`code/timevary_slope.ipynb`](code/timevary_slope.ipynb) | FIM method | Develops the time-varying gauge *S(Q)* method over the full reach selection: paired-gauge slope vs discharge, iterative Manning injection, HAND-FIM, and River-Mask CSI/F1. |
-| [`code/work6_3DHRS.ipynb`](code/work6_3DHRS.ipynb) | FIM headline study | The focused six-reach study and manuscript figures: static-satellite vs gauge time-varying *S(Q)*, scored on the River-Mask domain, with Results & Discussion. |
-| [`code/TV_Slope_FIM.ipynb`](code/TV_Slope_FIM.ipynb) | Consolidated study | Runs the whole study end to end over the six reaches and scores every slope treatment against FIMBench. |
-| [`code/swot_geoid_slope.ipynb`](code/swot_geoid_slope.ipynb) | **Vertical datum** | Verifies which vertical datum SWOT WSE is on, and quantifies how much the choice of geoid (ellipsoid / EGM2008 / EGM96 / NAVD88) changes a computed water-surface slope. See [Vertical datum](#vertical-datum-swot-wse-and-the-geoid). |
-| [`notebooks/work_0607.ipynb`](notebooks/work_0607.ipynb) | Parallel S(Q) reading | Sebastian's working notebook — a separate reading of the same research question over 17 reaches. Documented in [`README_SEBASTIAN.md`](README_SEBASTIAN.md). ~74 MB with embedded outputs; open it locally. |
+| # | Notebook | Scope | What it does |
+|---|---|---|---|
+| 01 | [`code/01_gauge_study.ipynb`](code/01_gauge_study.ipynb) | **Gauges only — not FIM** | A standalone survey of USGS gauge availability across the entire CONUS SWORD network: which reaches carry a same-river upstream/on-reach/downstream gauge triplet that can form a water-surface slope. Independent of flood-inundation mapping and FIMBench. |
+| 02 | [`code/02_study_area.ipynb`](code/02_study_area.ipynb) | **FIM reach selection** | Selects the reaches used in the FIM study: those covered by a **FIMBench** benchmark (**Tier 1–3** or high-water-mark) **and** carrying a usable gauge triplet, so both the benchmark and the paired-gauge slope are available. Benchmarks are auto-downloaded via `fimeval`. |
+| 03 | [`code/03_swot_geoid_slope.ipynb`](code/03_swot_geoid_slope.ipynb) | **Vertical datum** | Establishes which vertical datum every height source is on before any slope is computed from it, and quantifies what the choice costs. See [Vertical datum](#vertical-datum-swot-wse-and-the-geoid). |
+| 04 | [`code/04_timevary_slope.ipynb`](code/04_timevary_slope.ipynb) | FIM method | Develops the time-varying gauge *S(Q)* method over the full reach selection: paired-gauge slope vs discharge, iterative Manning injection, HAND-FIM, and River-Mask CSI/F1. |
+| 05 | [`code/05_work6_3DHRS.ipynb`](code/05_work6_3DHRS.ipynb) | FIM headline study | The focused six-reach study and manuscript figures: static-satellite vs gauge time-varying *S(Q)*, scored on the River-Mask domain, with Results & Discussion. |
+| 06 | [`code/06_TV_Slope_FIM.ipynb`](code/06_TV_Slope_FIM.ipynb) | Consolidated study | Runs the whole study end to end over the six reaches and scores every slope treatment against FIMBench. |
+| 07 | [`code/07_sebastian_sq_study.ipynb`](code/07_sebastian_sq_study.ipynb) | Parallel S(Q) reading | Sebastian's working notebook — a separate reading of the same research question over 17 reaches. Documented in [`README_SEBASTIAN.md`](README_SEBASTIAN.md). ~74 MB with embedded outputs; open it locally. |
 
 ## Installation
 
@@ -90,16 +95,16 @@ pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (need
 
 | To do this | You need |
 |---|---|
-| Reproduce the cached figures (`work6_3DHRS`) | base env only |
-| Run the vertical-datum notebook (`swot_geoid_slope`) | base env only (downloads geoid grids on first use) |
-| Select reaches / download benchmarks (`gauge_study`, `study_area`) | base env + `fimeval` |
+| Reproduce the cached figures (`05_work6_3DHRS`) | base env only |
+| Run the vertical-datum QC (`03_swot_geoid_slope`) | base env only (downloads geoid grids on first use) |
+| Select reaches / download benchmarks (`01_gauge_study`, `02_study_area`) | base env + `fimeval` |
 | Regenerate FIM from scratch (`REGEN_FIM=True` / `TVS_REGEN=1`) | base env + `fimeval` + `fimbox` + `fimserve` |
 
 ## Quick start
 
 ```bash
 # reproduce the flagship six-reach study end to end (uses the cached FIM extents)
-jupyter nbconvert --to notebook --execute --inplace code/work6_3DHRS.ipynb
+jupyter nbconvert --to notebook --execute --inplace code/05_work6_3DHRS.ipynb
 ```
 
 The core method in a few lines (as inlined in the notebook):
@@ -113,7 +118,7 @@ Q_new, S_new = solve_Q(Q0, S0, fit["func"])               # a time-varying synth
 csi = score_rm(fim_tif, benchmark_tif, river_mask(aoi, reach))["CSI"]
 ```
 
-Running `work6_3DHRS.ipynb` writes every figure into [`output_final/`](output_final/), for example:
+Running `05_work6_3DHRS.ipynb` writes every figure into [`output_final/`](output_final/), for example:
 
 <p align="center">
   <img src="output_final/figures/sq_relationship.png" width="49%" alt="S(Q)">
@@ -133,7 +138,7 @@ component), removing the large off-channel false-negative term that a whole-benc
 
 A slope is a difference of heights over a distance, so a **constant** offset between vertical datums cancels
 and the datum looks like bookkeeping. The **gradient** of the datum separation does not cancel — and on these
-reaches it is the same order of magnitude as the river slope itself. [`code/swot_geoid_slope.ipynb`](code/swot_geoid_slope.ipynb)
+reaches it is the same order of magnitude as the river slope itself. [`code/03_swot_geoid_slope.ipynb`](code/03_swot_geoid_slope.ipynb)
 works this out; [`code/tvslope_src/engine/datum.py`](code/tvslope_src/engine/datum.py) is the module.
 
 <p align="center"><img src="output_final/figures/geoid_datum_slope.png" width="94%" alt="vertical datum and slope"></p>
@@ -163,11 +168,27 @@ a 10 % slope error moves discharge ~5 % at fixed stage — and it does so with a
 real topography, which is exactly the kind of error that survives visual inspection. **A slope computed on the
 wrong datum mimics the geoid, not the river bed.**
 
-**3 · The datasets here do not share a geoid.** SWOT `wse` is **EGM2008**, SWORD/MERIT Hydro `wse` is
-**EGM96**, IRIS is **EIGEN-6C4**, and USGS gauge `alt_va` is **NAVD88**. Differencing across two models injects
-the difference between them into the slope. Put every source on one model with `datum.convert_geoid()` before
-differencing; the slope treatments in `data/slope_treatments.csv` are internally consistent, and this notebook
-is the check that keeps them that way.
+**3 · The datasets here do not share a datum.** SWOT `wse` is **EGM2008**, SWORD/MERIT Hydro `wse` is
+**EGM96**, IRIS is **EIGEN-6C4**, and USGS gauge `alt_va` is **NAVD88 *or* NGVD29**, per station. Differencing
+across two datums injects the difference between them into the slope. `datum.convert_vertical()` puts every
+source on one datum first.
+
+**4 · The same problem, on the ground: the gauge pairs were mixing datums.** The time-varying gauge slope is
+`S = (WSE_up − WSE_dn) / span` with `WSE = alt_va + stage`. NWIS reports `alt_va` against whatever
+`alt_datum_cd` says, and the original code read `alt_va` while ignoring that code. Of the study's 88 gauges,
+**79 are NAVD88, 6 are NGVD29 and 3 report none** — and **7 of 78 twin-gauge pairs straddle two datums**, so
+the NGVD29↔NAVD88 offset was going straight into their slope.
+
+`engine/per_reach3.py` now converts every gauge onto one datum (`datum.GAUGE_REF_DATUM`, NAVD88) before
+building `wse_series`, and returns NaN for a gauge on a `LOCAL`/`ASSUMED` datum instead of a number that
+quietly poisons the pair. Removing the artefact changes those 7 pairs by a median **5.5 mm/km** and up to
+**47.3 mm/km**. Because the artefact is a fixed offset in metres, it is negligible on a steep reach and
+dominant on a flat one — worst case reach `74267300241` (Ohio River, 18.5 km) drops from **14.35 to
+6.42 mm/km**, i.e. the old value was **more than double** the true slope. That is the backwater regime this
+study finds to be first-order, so the fix bites exactly where it matters most.
+
+One scope caveat: `code/tvslope_src/sebastian/` is a frozen parallel reading and still carries the original
+unharmonised `per_reach3`, so its committed notebook outputs stay reproducible.
 
 ## Data
 
@@ -187,6 +208,7 @@ is downloaded or generated by the workflow (full manifest, sizes, and sources in
 | `data/swot_hydrocron_study_reaches.csv` | SWOT L2_HR_RiverSP reach observations (WSE, slope, width, quality) for the study reaches | **Hydrocron** API (PO.DAAC) |
 | `data/swot_study_reach_nodes.csv` | SWORD node chain (coordinates, `dist_out`, WSE) for those reaches — lets the datum notebook run without the 3.7 GB SWORD download | **SWORD v17b** |
 | `data/swot_study_reaches_sword.csv` | SWORD reach centroids, WSE and slope for those reaches | **SWORD v17b** |
+| `data/study_gauge_datums.csv` | Every study gauge's `alt_va`, its reported `alt_datum_cd`, and the elevation converted onto NAVD88 | USGS NWIS + PROJ VERTCON |
 
 **Fetched by code — run `python code/get_data.py`.**
 

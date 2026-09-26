@@ -1,19 +1,26 @@
 # `sebastian_branch`: time-varying gauge slope S(Q), Sebastian's working notebook
 
-This branch **adds** a parallel line of work alongside `main`. Nothing on `main` is modified:
-`code/TV_Slope_FIM.ipynb` and `code/tvslope_src/` are untouched, and every file here is new.
+This began as a branch adding a parallel line of work alongside `main`; it is now merged. Its files
+live under `code/tvslope_src/sebastian/` (the modules) and `code/07_sebastian_sq_study.ipynb` (the
+notebook). The consolidated study, `code/06_TV_Slope_FIM.ipynb` with `code/tvslope_src/engine/`, is a
+separate line of work and is untouched by it.
 
-The notebook shares only a small part of its cell source with `code/TV_Slope_FIM.ipynb`. Treat the two
+> **Datum note.** `sebastian/per_reach3.py` is kept as it was, including the original unharmonised
+> gauge datum handling, so this notebook's committed outputs stay reproducible. The harmonised version
+> — which converts every gauge onto one vertical datum before differencing — lives in
+> `code/tvslope_src/engine/per_reach3.py`. See the README's "Vertical datum" section.
+
+The notebook shares only a small part of its cell source with `code/06_TV_Slope_FIM.ipynb`. Treat the two
 as two separate readings of the same research question rather than as one file and its edit.
 
 ## What this branch adds
 
 | Path | What it is |
 |---|---|
-| `notebooks/work_0607.ipynb` | The notebook, 59 cells, with all outputs kept so it reads without being run |
-| `notebooks/sq_core.py` | The S(Q) chain rebuilt against the public USGS NWIS API, so Step 7 runs anywhere |
-| `src/` | The analysis modules the notebook imports, plus the study-area registry and benchmark gate |
-| `stage_local_root.py` | The staging script, kept mainly for the data-tree manifest in its docstring |
+| `code/07_sebastian_sq_study.ipynb` | The notebook, 59 cells, with all outputs kept so it reads without being run |
+| `code/tvslope_src/sebastian/sq_core.py` | The S(Q) chain rebuilt against the public USGS NWIS API, so Step 7 runs anywhere |
+| `code/tvslope_src/sebastian/` | The analysis modules the notebook imports, plus the study-area registry and benchmark gate |
+| `code/tvslope_src/sebastian/stage_local_root.py` | The staging script, kept mainly for the data-tree manifest in its docstring |
 
 ## The contribution
 
@@ -31,12 +38,12 @@ Three tiers, stated plainly so nobody loses an afternoon to the third:
 1. **Reading the notebook needs nothing.** Every figure and table is embedded in the committed outputs.
 2. **Step 7 (the S(Q) sections) runs anywhere.** `sq_core.py` pulls from the public USGS NWIS API and
    caches each response, so these cells execute on a clean machine with only a network connection.
-   `src/timevarying_slope.py` imports `per_reach3`, which reads author-local CSVs at import time, so
+   `sebastian/timevarying_slope.py` imports `per_reach3`, which reads author-local CSVs at import time, so
    Step 7 deliberately does not depend on it. `sq_core.py` mirrors the same chain, and the notebook
    asserts that the mirror reproduces the production fits before using it.
 3. **Everything else needs the staged data tree.** Cell 2 resolves `ROOT` to a `slipperyslope/` tree in
    this order: `$SLIPPERYSLOPE_ROOT`, then `/Users/zixun/2026SI/slipperyslope`, then
-   `<repo>/slipperyslope`. The docstring of `stage_local_root.py` lists exactly what that tree must
+   `<repo>/slipperyslope`. The docstring of `code/tvslope_src/sebastian/stage_local_root.py` lists exactly what that tree must
    contain and which line of which module reads each item. The FIM scoring cell additionally needs the
    flood-extent run outputs (tens of GB), which no branch can carry.
 
@@ -51,10 +58,10 @@ Step 7 runs in the `slope` environment as it stands. One cell of the notebook dr
 with `cartopy`, which `environment.yml` does not list. Install it alongside, or skip that one cell.
 ## Known limits of this branch
 
-- `src/areas.py`, `src/benchmarks.py` and `stage_local_root.py` hard-code paths under the author's
+- `sebastian/areas.py`, `sebastian/benchmarks.py` and `code/tvslope_src/sebastian/stage_local_root.py` hard-code paths under the author's
   `local_data/` mirror. They import cleanly, and their functions need those paths to exist. Point them
   at a local copy of the tree before calling them.
-- `notebooks/work_0607.ipynb` is about 74 MB, because the high-resolution figures and two animations are
+- `code/07_sebastian_sq_study.ipynb` is about 74 MB, because the high-resolution figures and two animations are
   embedded. GitHub will not render a file that size in the browser, so pull the branch and open it
   locally.
 - The NWIS response cache is not committed. Step 7 refetches on first run and caches from there.
@@ -67,7 +74,7 @@ Both are recorded in the source comments, and both changed a conclusion:
   water-surface elevation. An earlier version took the median of the top quartile of slope *values* and
   called it a high-flow slope. On a backwater reach those two have opposite signs, and the substitution
   inverted the result.
-- **The benchmark is selected by event date, never by glob order.** `src/benchmarks.py` refuses Tier-4
+- **The benchmark is selected by event date, never by glob order.** `sebastian/benchmarks.py` refuses Tier-4
   synthetic design floods outright, so a real flood can never be scored against a 500-year design event
   simply because the filesystem returned it first.
 

@@ -32,7 +32,7 @@ dependencies:
   - scipy=1.15
   - scikit-learn=1.7
   - matplotlib=3.10
-  - cartopy              # TV_Slope_FIM.ipynb map cell only
+  - cartopy              # 06_TV_Slope_FIM.ipynb map cell only
   - contextily=1.7
   - xyzservices
   - dataretrieval=1.1
