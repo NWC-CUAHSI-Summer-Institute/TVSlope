@@ -19,7 +19,13 @@ def reach_buffer(reach_ids, buffer_km=5.0):
         try:
             gg = pyogrio.read_dataframe(SWORD, where=f"reach_id = {int(r)}")
             if len(gg): geoms.append(gg.set_crs(4326, allow_override=True).to_crs(EA).geometry.iloc[0])
-        except Exception: pass
+        except Exception as _e:                                              # sebastian update
+            # Do NOT swallow this. Returning None makes score() fall back to clip_geom=None and score the
+            # WHOLE AOI instead of the river corridor, so one site gets a corridor domain and another a
+            # basin domain and their CSI values are not comparable. Fail loudly rather than silently
+            # changing the denominator.
+            raise RuntimeError(f"reach_buffer failed for reach {r}: {_e}. Refusing to fall back to the "
+                               f"full-AOI domain, which is not comparable across sites.")
     if not geoms: return None
     return gpd.GeoSeries(geoms, crs=EA).buffer(buffer_km*1000.0).union_all()
 def _grid_for_aoi(aoi_gpkg, grid_m, clip_geom=None):
@@ -58,7 +64,16 @@ def _resample_to_grid(src_path, transform, width, height, band=1, resampling=Res
         reproject(arr, dst, src_transform=src_t, src_crs=src.crs, dst_transform=transform, dst_crs=EA,
                   resampling=resampling, src_nodata=nd, dst_nodata=np.nan)
     return dst, nd
-def score(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None, reach_ids=None, buffer_km=5.0):
+def score(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None, reach_ids=None,
+          buffer_km=5.0, exclude_permanent_water=True, streams_gpkg=None):
+    if min_depth:                                                            # sebastian update
+        # The FIM is NOT a depth raster: it is the OWP SIGNED HydroID raster (dry pixels are flipped
+        # negative), so positive HydroID = wet and negative = dry. `fim > min_depth` would compare a
+        # CATCHMENT ID against a depth in metres. Measured: a routine 0.1-0.99 m filter changes nothing,
+        # while 2.0 m silently deletes HydroID 1 -- filtering by ID number. Wet is a SIGN test, so the
+        # knob is refused rather than quietly lying.
+        raise RuntimeError("min_depth is meaningless here: the FIM is a signed-HydroID raster, not "
+                           "depth. Wet is fim > 0. Filter depth upstream if you need it.")
     _aoi_ok = (not isinstance(aoi_gpkg, (str, Path))) or Path(aoi_gpkg).exists()
     if not (fim_tif and Path(fim_tif).exists() and Path(bm_tif).exists() and _aoi_ok):
         return dict(error="missing input", CSI=np.nan)
@@ -76,10 +91,10 @@ def score(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None,
     if exclude_permanent_water:                                              # sebastian update
         # The channel is not a flood. Drop it from the domain entirely, the way fimeval's class 5 is
         # excluded, so it is neither TP/FP/FN/TN rather than being scored as a miss.
-        perm = permanent_water(mask_geom, transform, width, height, streams_gpkg=streams_gpkg)
+        perm = permanent_water(aoi, transform, width, height, streams_gpkg=streams_gpkg)
         domain = domain & ~perm
         wet_bm = wet_bm & ~perm
-    wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > min_depth)
+    wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > 0)
     TP = int((wet_fim & wet_bm).sum()); FP = int((wet_fim & ~wet_bm).sum())
     FN = int((~wet_fim & wet_bm).sum()); TN = int((~wet_fim & ~wet_bm & domain).sum())
     csi = TP/(TP+FP+FN) if (TP+FP+FN) else np.nan
@@ -94,7 +109,16 @@ def score(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None,
                 TP=TP, FP=FP, FN=FN, TN=TN, n_domain=int(domain.sum()),
                 fim_wet_km2=round(int(wet_fim.sum())*px_km2, 3), bm_wet_km2=round(int(wet_bm.sum())*px_km2, 3),
                 grid_m=grid_m)
-def score_grids(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None, reach_ids=None, buffer_km=5.0):
+def score_grids(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None, reach_ids=None,
+                buffer_km=5.0, exclude_permanent_water=True, streams_gpkg=None):
+    if min_depth:                                                            # sebastian update
+        # The FIM is NOT a depth raster: it is the OWP SIGNED HydroID raster (dry pixels are flipped
+        # negative), so positive HydroID = wet and negative = dry. `fim > min_depth` would compare a
+        # CATCHMENT ID against a depth in metres. Measured: a routine 0.1-0.99 m filter changes nothing,
+        # while 2.0 m silently deletes HydroID 1 -- filtering by ID number. Wet is a SIGN test, so the
+        # knob is refused rather than quietly lying.
+        raise RuntimeError("min_depth is meaningless here: the FIM is a signed-HydroID raster, not "
+                           "depth. Wet is fim > 0. Filter depth upstream if you need it.")
     if clip_geom is None and reach_ids is not None:
         clip_geom = reach_buffer(reach_ids, buffer_km)
     aoi, transform, width, height, bounds = _grid_for_aoi(aoi_gpkg, grid_m, clip_geom=clip_geom)
@@ -107,16 +131,17 @@ def score_grids(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom
     if exclude_permanent_water:                                              # sebastian update
         # The channel is not a flood. Drop it from the domain entirely, the way fimeval's class 5 is
         # excluded, so it is neither TP/FP/FN/TN rather than being scored as a miss.
-        perm = permanent_water(mask_geom, transform, width, height, streams_gpkg=streams_gpkg)
+        perm = permanent_water(aoi, transform, width, height, streams_gpkg=streams_gpkg)
         domain = domain & ~perm
         wet_bm = wet_bm & ~perm
-    wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > min_depth)
+    wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > 0)
     cat = np.full((height, width), np.nan, dtype="float32")
     cat[domain & ~wet_fim & ~wet_bm] = 0
     cat[domain & wet_fim & ~wet_bm] = 1
     cat[domain & ~wet_fim & wet_bm] = -1
     cat[domain & wet_fim & wet_bm] = 2
-    m = score(fim_tif, bm_tif, aoi_gpkg, grid_m=grid_m, min_depth=min_depth, clip_geom=clip_geom)
+    m = score(fim_tif, bm_tif, aoi_gpkg, grid_m=grid_m, min_depth=min_depth, clip_geom=clip_geom,
+              exclude_permanent_water=exclude_permanent_water, streams_gpkg=streams_gpkg)
     return cat, transform, bounds, m
 def _largest_cc(mask):
     if not mask.any(): return mask
@@ -207,14 +232,17 @@ def permanent_water(aoi_geom, transform, width, height, cache_dir=None, streams_
     import hashlib as _hl, os as _os
     from rasterio.features import rasterize as _rasterize
 
-    if hasattr(aoi_geom, "geom_type"):                       # shapely geometry already in EA
-        boundary = gpd.GeoDataFrame(geometry=[aoi_geom], crs=EA)
-        key = _hl.md5(aoi_geom.wkb).hexdigest()[:16]
-    elif isinstance(aoi_geom, gpd.GeoDataFrame):
+    # NOTE the order: a GeoDataFrame ALSO has .geom_type (it returns a Series), so testing hasattr first
+    # sends a GeoDataFrame down the shapely branch and raises GeometryTypeError. The isinstance test must
+    # come first, or the GeoDataFrame branch is dead code.
+    if isinstance(aoi_geom, gpd.GeoDataFrame):
         boundary = aoi_geom.to_crs(EA)
         # Key on the GEOMETRY, not the bounding box: two differently shaped AOIs sharing a bbox
         # otherwise collide and reuse each other's permanent water.
         key = _hl.md5(boundary.geometry.union_all().wkb).hexdigest()[:16]
+    elif hasattr(aoi_geom, "geom_type"):                     # shapely geometry already in EA
+        boundary = gpd.GeoDataFrame(geometry=[aoi_geom], crs=EA)
+        key = _hl.md5(aoi_geom.wkb).hexdigest()[:16]
     else:
         boundary = str(aoi_geom)
         key = _os.path.basename(boundary).replace(".gpkg", "")
@@ -266,6 +294,14 @@ def permanent_water(aoi_geom, transform, width, height, cache_dir=None, streams_
 
 def score_rm(fim_tif, bm_tif, mask_geom, grid_m=30.0, min_depth=0.0, largest_cc=True, return_grid=False,
              river_geom=None, exclude_permanent_water=True, streams_gpkg=None):
+    if min_depth:                                                            # sebastian update
+        # The FIM is NOT a depth raster: it is the OWP SIGNED HydroID raster (dry pixels are flipped
+        # negative), so positive HydroID = wet and negative = dry. `fim > min_depth` would compare a
+        # CATCHMENT ID against a depth in metres. Measured: a routine 0.1-0.99 m filter changes nothing,
+        # while 2.0 m silently deletes HydroID 1 -- filtering by ID number. Wet is a SIGN test, so the
+        # knob is refused rather than quietly lying.
+        raise RuntimeError("min_depth is meaningless here: the FIM is a signed-HydroID raster, not "
+                           "depth. Wet is fim > 0. Filter depth upstream if you need it.")
     if not (fim_tif and Path(fim_tif).exists() and bm_tif and Path(bm_tif).exists() and mask_geom is not None):
         return (None, None, None, dict(CSI=np.nan)) if return_grid else dict(CSI=np.nan)
     aoi, transform, width, height, bounds = _grid_for_aoi(mask_geom, grid_m)
@@ -294,7 +330,7 @@ def score_rm(fim_tif, bm_tif, mask_geom, grid_m=30.0, min_depth=0.0, largest_cc=
         perm = permanent_water(mask_geom, transform, width, height, streams_gpkg=streams_gpkg)
         domain = domain & ~perm
         wet_bm = wet_bm & ~perm
-    wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > min_depth)
+    wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > 0)
     TP = int((wet_fim & wet_bm).sum()); FP = int((wet_fim & ~wet_bm & domain).sum())
     FN = int((~wet_fim & wet_bm).sum()); TN = int((~wet_fim & ~wet_bm & domain).sum())
     csi = TP/(TP+FP+FN) if (TP+FP+FN) else np.nan; pod = TP/(TP+FN) if (TP+FN) else np.nan
