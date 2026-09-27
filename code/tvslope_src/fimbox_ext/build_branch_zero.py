@@ -8,10 +8,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from fimbox.preprocessing.calculate_branch.process_branches import (
     AOIProcessingConfig, _resolve_paths, _process_single_branch)
 
-ROOT = Path("/Users/zixun/2026SI/slipperyslope"); FB = ROOT/"data/fimbox_out"
+from _paths import ROOT, FB, fimbox_config
 HUCS = os.environ.get("BRANCH0_HUCS", "05140101,07130011,07140105,10170203,10230003").split(",")
 FORCE = bool(os.environ.get("FORCE_BRANCH0"))
-DENY = Path("/Users/zixun/2026SI/FIMBox_github/fimbox/config/deny_branch_zero.lst")   # FIMbox's own branch-0 cleanup list
+DENY = fimbox_config("deny_branch_zero.lst")   # FIMbox's own branch-0 cleanup list
 
 def log(m): print(f"[{time.strftime('%H:%M:%S')}] {m}", flush=True)
 

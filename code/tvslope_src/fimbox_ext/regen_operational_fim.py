@@ -6,18 +6,17 @@ from pathlib import Path
 import numpy as np, pandas as pd
 import geopandas as gpd, pyogrio
 
-sys.path.insert(0, "/Users/zixun/2026SI/FIMBox_github/fimbox/src")
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import ROOT, DATA, SWORD, FB, fimbox_src, slope_treatments_csv
+_fs = fimbox_src()
+if _fs: sys.path.insert(0, str(_fs))
 import fimbox
 from fimbox import generateFIM
 from fimbox._dask import _resolve_n_workers
 import fimbox_uncalibrated as FU
 NW = _resolve_n_workers()
 
-ROOT = Path("/Users/zixun/2026SI/slipperyslope")
-SWORD = ROOT/"data/SWORD_v17b_gpkg/na_sword_reaches_v17b.gpkg"
-FB = ROOT/"data/fimbox_out"
-st = pd.read_csv(ROOT/"output_exp6/select/slope_treatments.csv", dtype={"reach": str}).drop_duplicates("reach").set_index("reach")
+st = pd.read_csv(slope_treatments_csv(), dtype={"reach": str}).drop_duplicates("reach").set_index("reach")
 
 TREATS = ["hfirissword_new", "swot_median", "swot_floodstage", "swot_maxwse"]   # static treatments the notebook scores
 SLOPE_COL = {"hfirissword_new": "hfirissword_new_mmkm", "swot_median": "swot_median_mmkm",
