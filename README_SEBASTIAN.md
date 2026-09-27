@@ -17,6 +17,9 @@ Author of the original analysis and of the four contributions below: **Sebastian
 | `engine/reach_mask.py` | The **causal footprint** of a slope treatment, and the invariant that follows: if the flood map changes *outside* the catchments the injection touched, the injection touched something it should not have. That is not a metric, it is a correctness test — and it caught a real bug, where HydroIDs (which HAND numbers *per branch*) were used as the injection key and 52% of the rescaled rows were the wrong river. |
 | `engine/benchmarks.py` | Benchmark selection by **event date and tier**, never by glob order. For HUC 12020003 the catalog offers both a high-water-mark map of Hurricane Harvey and `Tier_4 BLE_500`, a 500-year synthetic design flood. A glob could score Harvey against a design flood and nothing would notice. Tier_4 is now refused, loudly. |
 | `engine/fim_reach.py` → the slope-treatment chain, and `per_reach3.swot_clean()` | The **provenance of `data/slope_treatments.csv`**. That table was committed data with no code in the main line that could rebuild it. |
+| `engine/fim_eval.py` → `min_depth` refused in `score` / `score_grids` / `score_rm` | The FIM is the OWP **signed-HydroID** raster (dry pixels flipped negative), not a depth raster, so `fim > min_depth` compares a catchment ID against metres. Measured: 0.1–0.99 m changes nothing, while 2.0 m silently deletes HydroID 1 — filtering by ID number. Wet is a **sign test**; the knob is now refused rather than quietly lying. |
+| `engine/fim_eval.py` → fail-loud `reach_buffer` | It used to swallow the exception and return `None`, which makes `score()` fall back to `clip_geom=None` and score the **whole AOI** instead of the river corridor. One site then gets a corridor domain and another a basin domain, and their CSIs are not comparable. It now raises. |
+| `engine/benchmarks.py` → `covers_reach()`, rule 3 | A scene can be the right event and the right tier and still sit in a different part of a multi-HUC basin. Scoring against it gives an empty domain and a NaN CSI, which reads as "no result" rather than "wrong benchmark". Measured on HUC 10230003 reach 74295100321: of 13 date-matched, observed scenes **only 3 actually overlap the reach**. |
 
 Two changes were needed to make the ported code run outside the author's machine, plus one correction:
 
@@ -24,6 +27,11 @@ Two changes were needed to make the ported code run outside the author's machine
   `/Users/sebastianmarshall/dev/...` and `/Users/zixun/2026SI/slipperyslope`. The ports resolve
   everything through `final_config._repo_root()` and the committed `data/` tree.
 - **`SystemExit` → `RuntimeError`**, so a refusal does not kill a Jupyter kernel.
+- **One latent bug in the original was fixed on the way in.** `permanent_water()` tested
+  `hasattr(aoi, "geom_type")` before `isinstance(aoi, GeoDataFrame)` — but a GeoDataFrame *also* has
+  `.geom_type`, so the GeoDataFrame branch was dead code and passing one raised `GeometryTypeError`. It
+  never fired for him because his call sites only ever passed a shapely geometry or a path; the engine's
+  `score()`/`score_grids()` pass a GeoDataFrame, which exposed it. The isinstance test now comes first.
 - **The gauge slope is now datum-harmonised.** `gauge_slope()` goes through the engine's
   `per_reach3.twin_series`, which puts both gauges on one vertical datum before differencing them. The
   original did not, and 7 of 78 twin-gauge pairs in this study straddle NAVD88 and NGVD29. See the
