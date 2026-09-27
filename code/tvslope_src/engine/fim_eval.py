@@ -10,7 +10,7 @@ from rasterio.windows import from_bounds as _win_from_bounds, Window
 from rasterio.features import geometry_mask
 from affine import Affine
 from scipy import ndimage as _ndi
-from final_config import SWORD, EA
+from final_config import SWORD, EA, DATA
 from fim_reach import reach_feature_ids
 def reach_buffer(reach_ids, buffer_km=5.0):
     if isinstance(reach_ids, (str, int)): reach_ids = [reach_ids]
@@ -73,6 +73,12 @@ def score(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom=None,
     bm_defined = np.isfinite(bm) & (bm != (bm_nd if bm_nd is not None else -9999))
     domain = aoi_mask & bm_defined
     wet_bm = domain & (bm >= 0.5)
+    if exclude_permanent_water:                                              # sebastian update
+        # The channel is not a flood. Drop it from the domain entirely, the way fimeval's class 5 is
+        # excluded, so it is neither TP/FP/FN/TN rather than being scored as a miss.
+        perm = permanent_water(mask_geom, transform, width, height, streams_gpkg=streams_gpkg)
+        domain = domain & ~perm
+        wet_bm = wet_bm & ~perm
     wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > min_depth)
     TP = int((wet_fim & wet_bm).sum()); FP = int((wet_fim & ~wet_bm).sum())
     FN = int((~wet_fim & wet_bm).sum()); TN = int((~wet_fim & ~wet_bm & domain).sum())
@@ -98,6 +104,12 @@ def score_grids(fim_tif, bm_tif, aoi_gpkg, grid_m=30.0, min_depth=0.0, clip_geom
     bm_defined = np.isfinite(bm) & (bm != (bm_nd if bm_nd is not None else -9999))
     domain = aoi_mask & bm_defined
     wet_bm = domain & (bm >= 0.5)
+    if exclude_permanent_water:                                              # sebastian update
+        # The channel is not a flood. Drop it from the domain entirely, the way fimeval's class 5 is
+        # excluded, so it is neither TP/FP/FN/TN rather than being scored as a miss.
+        perm = permanent_water(mask_geom, transform, width, height, streams_gpkg=streams_gpkg)
+        domain = domain & ~perm
+        wet_bm = wet_bm & ~perm
     wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > min_depth)
     cat = np.full((height, width), np.nan, dtype="float32")
     cat[domain & ~wet_fim & ~wet_bm] = 0
@@ -174,7 +186,86 @@ def _resample_win(src_path, transform, width, height, bounds, band=1, resampling
         reproject(arr, dst, src_transform=arr_t, src_crs=srcd.crs, dst_transform=transform, dst_crs=EA,
                   src_nodata=srcd.nodata, dst_nodata=np.nan, resampling=resampling)
         return dst, srcd.nodata
-def score_rm(fim_tif, bm_tif, mask_geom, grid_m=30.0, min_depth=0.0, largest_cc=True, return_grid=False, river_geom=None):
+
+def permanent_water(aoi_geom, transform, width, height, cache_dir=None, streams_gpkg=None):
+    """Boolean permanent-water mask on the target grid, from fimeval's own extractor.  # sebastian update
+
+    THE DEFECT THIS FIXES. The FIMBench benchmarks are OBSERVED-WATER maps, so they contain the river
+    sitting in its own channel. Those pixels are not a flood. In a 12 km box on the Ohio they are
+    12,774 of 25,906 benchmark-wet pixels -- 49.3% of everything the benchmark calls wet. A HAND-FIM
+    that leaves the channel dry therefore puts every one of them in FN, and the map paints the whole
+    river blue as a missed flood. The Ohio baseline printed POD 0.519, implying an FN share of 48.1%,
+    which matches the measured permanent-water share to 1.2%: its entire "miss" class was the river.
+
+    The operational scorer does not do this. fimeval gives permanent water its own class (5) and
+    excludes it from the metrics. This reuses fimeval's own extractor so the definition matches.
+
+    CACHED, because ExtractPWB queries a live ArcGIS endpoint and can hang for minutes. An empty
+    response would silently reintroduce the defect, so an empty result raises rather than returning a
+    blank mask.
+    """
+    import hashlib as _hl, os as _os
+    from rasterio.features import rasterize as _rasterize
+
+    if hasattr(aoi_geom, "geom_type"):                       # shapely geometry already in EA
+        boundary = gpd.GeoDataFrame(geometry=[aoi_geom], crs=EA)
+        key = _hl.md5(aoi_geom.wkb).hexdigest()[:16]
+    elif isinstance(aoi_geom, gpd.GeoDataFrame):
+        boundary = aoi_geom.to_crs(EA)
+        # Key on the GEOMETRY, not the bounding box: two differently shaped AOIs sharing a bbox
+        # otherwise collide and reuse each other's permanent water.
+        key = _hl.md5(boundary.geometry.union_all().wkb).hexdigest()[:16]
+    else:
+        boundary = str(aoi_geom)
+        key = _os.path.basename(boundary).replace(".gpkg", "")
+
+    cache_dir = str(cache_dir or (DATA/"pwb_cache"))
+    _os.makedirs(cache_dir, exist_ok=True)
+    cache = _os.path.join(cache_dir, f"{key}_pwb.gpkg")
+    if not _os.path.exists(cache):
+        try:
+            import fimeval as _fe
+            _fe.ExtractPWB(boundary=boundary, output_dir=cache_dir, save=True,
+                           output_filename=_os.path.basename(cache))
+        except Exception as e:
+            print(f"  [PWB] ExtractPWB unavailable ({type(e).__name__}); trying the local fallback", flush=True)
+
+    g = gpd.read_file(cache) if _os.path.exists(cache) else gpd.GeoDataFrame(geometry=[])
+    if not len(g):
+        # LOCAL FALLBACK. ExtractPWB returns nothing for some small AOIs that carry no mapped lakes.
+        # That is not necessarily a service failure: for a small perennial river the permanent water IS
+        # the channel. So fall back to the NWM stream network (the operational river lines), buffered to
+        # a nominal channel half-width and clipped to the AOI. Same insight, local source.
+        if streams_gpkg and _os.path.exists(str(streams_gpkg)):
+            _bnd = boundary if hasattr(boundary, "geometry") else gpd.read_file(boundary)
+            _aoi = _bnd.to_crs(EA).union_all()
+            _st = gpd.read_file(streams_gpkg).to_crs(EA)
+            _st = _st[_st.geometry.intersects(_aoi)]
+            if len(_st):
+                g = gpd.GeoDataFrame(geometry=[_st.buffer(20.0).union_all().intersection(_aoi)], crs=EA)
+                print(f"  [PWB] ExtractPWB empty; using local NWM-stream channel "
+                      f"({len(_st)} reaches, 20 m buffer)", flush=True)
+        if not len(g):
+            raise RuntimeError(
+                "no permanent water available (ExtractPWB empty and no local NWM-stream fallback). "
+                "Refusing to score: an empty mask makes the river channel count as a missed flood, the "
+                "exact defect this guards against. Pass streams_gpkg=, or set "
+                "exclude_permanent_water=False to score without it and say so in the results.")
+
+    g = g.to_crs(EA)
+    geoms = [x for x in g.geometry if x is not None and not x.is_empty]
+    if not geoms:
+        # RAISE, never hand back a blank mask. A cache with rows but no valid geometry (a truncated
+        # write) passes the row-count guard, and a blank mask makes the exclusion a no-op: the channel
+        # goes straight back to being scored as missed flood, returning a plausible CSI with no error.
+        raise RuntimeError("permanent-water layer has rows but no valid geometry: refusing to score "
+                           "with an empty mask, which would score the river channel as missed flood")
+    return _rasterize(((x, 1) for x in geoms), out_shape=(height, width), transform=transform,
+                      fill=0, dtype="uint8").astype(bool)
+
+
+def score_rm(fim_tif, bm_tif, mask_geom, grid_m=30.0, min_depth=0.0, largest_cc=True, return_grid=False,
+             river_geom=None, exclude_permanent_water=True, streams_gpkg=None):
     if not (fim_tif and Path(fim_tif).exists() and bm_tif and Path(bm_tif).exists() and mask_geom is not None):
         return (None, None, None, dict(CSI=np.nan)) if return_grid else dict(CSI=np.nan)
     aoi, transform, width, height, bounds = _grid_for_aoi(mask_geom, grid_m)
@@ -197,6 +288,12 @@ def score_rm(fim_tif, bm_tif, mask_geom, grid_m=30.0, min_depth=0.0, largest_cc=
             if largest_cc: wet_bm = _largest_cc(wet_bm)
     elif largest_cc:
         wet_bm = _largest_cc(wet_bm)
+    if exclude_permanent_water:                                              # sebastian update
+        # The channel is not a flood. Drop it from the domain entirely, the way fimeval's class 5 is
+        # excluded, so it is neither TP/FP/FN/TN rather than being scored as a miss.
+        perm = permanent_water(mask_geom, transform, width, height, streams_gpkg=streams_gpkg)
+        domain = domain & ~perm
+        wet_bm = wet_bm & ~perm
     wet_fim = domain & np.isfinite(fim) & (fim != (fim_nd if fim_nd is not None else -9999)) & (fim > min_depth)
     TP = int((wet_fim & wet_bm).sum()); FP = int((wet_fim & ~wet_bm & domain).sum())
     FN = int((~wet_fim & wet_bm).sum()); TN = int((~wet_fim & ~wet_bm & domain).sum())
@@ -215,4 +312,5 @@ def score_rm(fim_tif, bm_tif, mask_geom, grid_m=30.0, min_depth=0.0, largest_cc=
         return cat, transform, bounds, m
     return m
 FE  = SimpleNamespace(EA=EA, SWORD=SWORD, score=score, score_grids=score_grids, reach_buffer=reach_buffer,
-                      river_mask=river_mask, reach_buffer_geom=reach_buffer_geom, score_rm=score_rm, _largest_cc=_largest_cc, reach_streams=reach_streams)
+                      river_mask=river_mask, reach_buffer_geom=reach_buffer_geom, score_rm=score_rm, _largest_cc=_largest_cc, reach_streams=reach_streams,
+                      permanent_water=permanent_water)
