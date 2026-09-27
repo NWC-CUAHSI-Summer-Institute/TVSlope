@@ -33,9 +33,10 @@ import re
 
 import pandas as pd
 
-from final_config import DATA
+from final_config import DATA, SWORD
 
-__all__ = ["ELIGIBLE", "REFUSED", "SyntheticBenchmarkRefused", "scene_dates", "catalog", "select", "paths"]
+__all__ = ["ELIGIBLE", "REFUSED", "SyntheticBenchmarkRefused", "scene_dates", "catalog", "select",
+           "paths", "reach_line", "covers_reach"]
 
 ELIGIBLE = ("Tier_1", "Tier_2", "Tier_3", "HWM")   # observed floods
 REFUSED = ("Tier_4",)                              # synthetic design floods (BLE)
@@ -155,11 +156,54 @@ def catalog() -> pd.DataFrame:
     return c.reset_index(drop=True)
 
 
-def select(bench_huc, event_date, cat: pd.DataFrame | None = None, prefer: str | None = None) -> dict:
+
+def reach_line(reach):
+    """The SWORD centreline of a reach, in EPSG:4326, or None if it cannot be read."""
+    try:
+        import pyogrio
+        g = pyogrio.read_dataframe(SWORD, where=f"reach_id = {int(reach)}")
+        if not len(g):
+            return None
+        return g.set_crs(4326, allow_override=True).geometry.iloc[0]
+    except Exception:
+        return None
+
+
+def covers_reach(bm_tif, reach) -> bool | None:
+    """Does this benchmark raster actually overlap the reach?  # sebastian update
+
+    Rule 3 of the gate. A scene can be the right event, the right tier and still sit in a different part
+    of a multi-HUC basin: FIMBench scene folders span several HUC8s, so date and tier alone will happily
+    hand back a tile that does not touch the reach at all. Scoring against it silently yields an empty
+    evaluation domain and a NaN CSI -- which reads as "no result" rather than "wrong benchmark".
+
+    Returns True/False, or None when the answer cannot be determined (raster or reach unreadable), so a
+    caller can choose to keep an unverifiable candidate rather than drop it.
+    """
+    line = reach_line(reach)
+    if line is None or not bm_tif or not os.path.exists(str(bm_tif)):
+        return None
+    try:
+        import rasterio, geopandas as gpd
+        from shapely.geometry import box as _box
+        with rasterio.open(bm_tif) as ds:
+            b = ds.bounds
+            foot = gpd.GeoSeries([_box(b.left, b.bottom, b.right, b.top)], crs=ds.crs).to_crs(4326).iloc[0]
+        return bool(foot.intersects(line))
+    except Exception:
+        return None
+
+
+def select(bench_huc, event_date, cat: pd.DataFrame | None = None, prefer: str | None = None,
+           reach=None) -> dict:
     """The one benchmark scene to score against, chosen by date then by tier and resolution.
 
     `event_date` is an ISO date or an (start, end) window; a scene matches when ANY of its embedded
     dates falls inside it. Raises SyntheticBenchmarkRefused when the only date-matched option is Tier_4.
+
+    `reach` turns on rule 3: a candidate whose benchmark raster is on disk and demonstrably does NOT
+    overlap the reach is dropped. Candidates whose coverage cannot be checked (raster not downloaded) are
+    kept, so this never blocks a selection on a machine that has not fetched the data yet.
 
     `prefer` is a scene the caller has already pinned (`final_config.AREAS[...]["event"]`). When it is
     eligible and its date matches, it WINS -- the gate validates the pinned choice rather than
@@ -178,6 +222,17 @@ def select(bench_huc, event_date, cat: pd.DataFrame | None = None, prefer: str |
         raise RuntimeError(f"HUC {bench_huc}: no benchmark scene dated in {lo}..{hi}. Available: {avail}")
 
     ok = matched[matched.tier.isin(ELIGIBLE)]
+    if reach is not None and len(ok):                                        # sebastian update
+        keep = []
+        for _, c in ok.iterrows():
+            bm, _a = paths(bench_huc, c.site)
+            keep.append(covers_reach(bm, reach) is not False)   # None (unknown) is kept
+        covered = ok[pd.Series(keep, index=ok.index)]
+        if not len(covered):
+            raise RuntimeError(
+                f"HUC {bench_huc}: every benchmark dated in {lo}..{hi} is an observation, but none of them "
+                f"overlaps reach {reach}. Scoring against one would give an empty domain and a NaN CSI.")
+        ok = covered
     if not len(ok):
         bad = sorted(set(matched.tier))
         raise SyntheticBenchmarkRefused(
