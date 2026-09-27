@@ -1,81 +1,47 @@
-# `sebastian_branch`: time-varying gauge slope S(Q), Sebastian's working notebook
+# Integrated from `sebastian_branch`
 
-This began as a branch adding a parallel line of work alongside `main`; it is now merged. Its files
-live under `code/tvslope_src/sebastian/` (the modules) and `code/07_sebastian_sq_study.ipynb` (the
-notebook). The consolidated study, `code/06_TV_Slope_FIM.ipynb` with `code/tvslope_src/engine/`, is a
-separate line of work and is untouched by it.
+Sebastian Marshall's `sebastian_branch` was a parallel reading of the same research question, carrying
+its own engine (`src/`), its own notebook (`work_0607.ipynb`) and a portable `S(Q)` mirror
+(`sq_core.py`). The parts of it that the main line lacked have been integrated into
+`code/tvslope_src/engine/`, and the parallel tree has been removed so the repository has one engine
+rather than two. Integrated code carries a `# sebastian update` marker.
 
-> **Datum note.** `sebastian/per_reach3.py` is kept as it was, including the original unharmonised
-> gauge datum handling, so this notebook's committed outputs stay reproducible. The harmonised version
-> — which converts every gauge onto one vertical datum before differencing — lives in
-> `code/tvslope_src/engine/per_reach3.py`. See the README's "Vertical datum" section.
+Author of the original analysis and of the four contributions below: **Sebastian R.O. Marshall**
+(Johns Hopkins University, [@rushmarshall](https://github.com/rushmarshall)).
 
-The notebook shares only a small part of its cell source with `code/06_TV_Slope_FIM.ipynb`. Treat the two
-as two separate readings of the same research question rather than as one file and its edit.
+## What was integrated, and why it mattered
 
-## What this branch adds
-
-| Path | What it is |
+| Now at | What it fixes |
 |---|---|
-| `code/07_sebastian_sq_study.ipynb` | The notebook, 59 cells, with all outputs kept so it reads without being run |
-| `code/tvslope_src/sebastian/sq_core.py` | The S(Q) chain rebuilt against the public USGS NWIS API, so Step 7 runs anywhere |
-| `code/tvslope_src/sebastian/` | The analysis modules the notebook imports, plus the study-area registry and benchmark gate |
-| `code/tvslope_src/sebastian/stage_local_root.py` | The staging script, kept mainly for the data-tree manifest in its docstring |
+| `engine/fim_eval.py` → `permanent_water()`, wired into `score_rm()` | FIMBench benchmarks are **observed-water** maps, so they contain the river sitting in its own channel. Those pixels are not a flood. In a 12 km box on the Ohio they are 12,774 of 25,906 benchmark-wet pixels — **49.3%** of everything the benchmark calls wet. A HAND-FIM that leaves the channel dry put every one of them in FN. The operational `fimeval` scorer gives permanent water its own class and excludes it; the main line did not. |
+| `engine/reach_mask.py` | The **causal footprint** of a slope treatment, and the invariant that follows: if the flood map changes *outside* the catchments the injection touched, the injection touched something it should not have. That is not a metric, it is a correctness test — and it caught a real bug, where HydroIDs (which HAND numbers *per branch*) were used as the injection key and 52% of the rescaled rows were the wrong river. |
+| `engine/benchmarks.py` | Benchmark selection by **event date and tier**, never by glob order. For HUC 12020003 the catalog offers both a high-water-mark map of Hurricane Harvey and `Tier_4 BLE_500`, a 500-year synthetic design flood. A glob could score Harvey against a design flood and nothing would notice. Tier_4 is now refused, loudly. |
+| `engine/fim_reach.py` → the slope-treatment chain, and `per_reach3.swot_clean()` | The **provenance of `data/slope_treatments.csv`**. That table was committed data with no code in the main line that could rebuild it. |
 
-## The contribution
+Two changes were needed to make the ported code run outside the author's machine, plus one correction:
 
-Beyond the static-satellite baseline (IRIS-SWORD, Chen 2025) and the time-varying SWOT slopes, the
-notebook introduces a **time-varying gauge slope**: two paired stations give a water-surface slope that
-varies with discharge, `S(Q)`, which is fitted per reach and injected into the Manning synthetic rating
-curve. Because the uncalibrated SRC is Manning, injecting a slope rescales discharge by
-`sqrt(S_new / S_0)` at fixed stage. Seventeen SWOT-observed reaches span the hydraulic-regime axis,
-separating reaches where slope rises with flow (kinematic) from reaches where it falls (backwater).
+- **No hard-coded local paths.** The originals resolved a data root through
+  `/Users/sebastianmarshall/dev/...` and `/Users/zixun/2026SI/slipperyslope`. The ports resolve
+  everything through `final_config._repo_root()` and the committed `data/` tree.
+- **`SystemExit` → `RuntimeError`**, so a refusal does not kill a Jupyter kernel.
+- **The gauge slope is now datum-harmonised.** `gauge_slope()` goes through the engine's
+  `per_reach3.twin_series`, which puts both gauges on one vertical datum before differencing them. The
+  original did not, and 7 of 78 twin-gauge pairs in this study straddle NAVD88 and NGVD29. See the
+  README's "Vertical datum" section.
 
-## What runs, and where
+## What was not carried over
 
-Three tiers, stated plainly so nobody loses an afternoon to the third:
+- `sq_core.py` — a portable `S(Q)` chain rebuilt against the public USGS NWIS API. Its portability is
+  now met by `engine/per_reach3`, which reads committed extracts and caches NWIS responses itself. Its
+  other value was as an *independent* cross-check that asserted it reproduced the production fits; that
+  cross-check is lost with it.
+- `areas.py`, `find_reaches3.py` — a separate study-area registry and 3-gauge reach finder, superseded
+  by `final_config.AREAS` and notebooks 01–02.
+- `stage_local_root.py` — a staging script for the author's local mirror.
+- `fim_reach.build_hand_once` / `generate_fim_for_reach` / `generate_treatment_fim` — a monolithic FIM
+  generation path. The main line generates FIM through `code/tvslope_src/fimbox_ext/` instead.
+- `notebooks/work_0607.ipynb` — the notebook itself, which depended on a staged tree outside this
+  repository. Its conclusions over 17 reaches are not reproduced here.
 
-1. **Reading the notebook needs nothing.** Every figure and table is embedded in the committed outputs.
-2. **Step 7 (the S(Q) sections) runs anywhere.** `sq_core.py` pulls from the public USGS NWIS API and
-   caches each response, so these cells execute on a clean machine with only a network connection.
-   `sebastian/timevarying_slope.py` imports `per_reach3`, which reads author-local CSVs at import time, so
-   Step 7 deliberately does not depend on it. `sq_core.py` mirrors the same chain, and the notebook
-   asserts that the mirror reproduces the production fits before using it.
-3. **Everything else needs the staged data tree.** Cell 2 resolves `ROOT` to a `slipperyslope/` tree in
-   this order: `$SLIPPERYSLOPE_ROOT`, then `/Users/zixun/2026SI/slipperyslope`, then
-   `<repo>/slipperyslope`. The docstring of `code/tvslope_src/sebastian/stage_local_root.py` lists exactly what that tree must
-   contain and which line of which module reads each item. The FIM scoring cell additionally needs the
-   flood-extent run outputs (tens of GB), which no branch can carry.
-
-Everything staged is real data already fetched from the operational sources: FIMBench benchmarks
-(sdmlua fimeval), flood extents from NOAA-OWP inundation-mapping on the OWP HAND 4.9.9.0 cache, and the
-Harlan et al. (2026) SWOT-gauge pairing (USGS ScienceBase, 10.5066/P1FE9W9E).
-
-## Environment
-
-The repository `environment.yml` already covers what `sq_core.py` needs, `dataretrieval` included, so
-Step 7 runs in the `slope` environment as it stands. One cell of the notebook draws a CONUS context map
-with `cartopy`, which `environment.yml` does not list. Install it alongside, or skip that one cell.
-## Known limits of this branch
-
-- `sebastian/areas.py`, `sebastian/benchmarks.py` and `code/tvslope_src/sebastian/stage_local_root.py` hard-code paths under the author's
-  `local_data/` mirror. They import cleanly, and their functions need those paths to exist. Point them
-  at a local copy of the tree before calling them.
-- `code/07_sebastian_sq_study.ipynb` is about 74 MB, because the high-resolution figures and two animations are
-  embedded. GitHub will not render a file that size in the browser, so pull the branch and open it
-  locally.
-- The NWIS response cache is not committed. Step 7 refetches on first run and caches from there.
-
-## Two things worth a second look
-
-Both are recorded in the source comments, and both changed a conclusion:
-
-- **Condition on flow, not on the slope quantile.** `swot_floodstage` and `swot_maxwse` condition on
-  water-surface elevation. An earlier version took the median of the top quartile of slope *values* and
-  called it a high-flow slope. On a backwater reach those two have opposite signs, and the substitution
-  inverted the result.
-- **The benchmark is selected by event date, never by glob order.** `sebastian/benchmarks.py` refuses Tier-4
-  synthetic design floods outright, so a real flood can never be scored against a 500-year design event
-  simply because the filesystem returned it first.
-
-Author: Sebastian R.O. Marshall
+The full pre-integration state is recoverable: it is the `sebastian_branch` ref on
+`NWC-CUAHSI-Summer-Institute/TVSlope`, and it remains in this repository's history.

@@ -45,9 +45,9 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
   environment.yml             # conda env
   README.md  DATA.md
   code/                       # every notebook (numbered in run order) and every module
-    01_gauge_study.ipynb  ...  07_sebastian_sq_study.ipynb
+    01_gauge_study.ipynb  ...  06_TV_Slope_FIM.ipynb
     get_data.py
-    tvslope_src/{engine,fimbox_ext,sebastian}/
+    tvslope_src/{engine,fimbox_ext}/
   data/                       # inputs (see tiers) — small tables in git, cache via LFS, big layers external
     slope_treatments.csv
     study_area_gauges.csv
@@ -75,7 +75,8 @@ and the three SWOT/SWORD extracts that make the vertical-datum notebook reproduc
 study reaches), `data/swot_study_reach_nodes.csv` (680 KB, the SWORD node chain — coordinates and
 `dist_out` — for those reaches), `data/swot_study_reaches_sword.csv` (12 KB, reach centroids), and
 `data/study_gauge_datums.csv` (10 KB, each study gauge's `alt_va`, its NWIS `alt_datum_cd`, and
-the elevation converted onto NAVD88).
+the elevation converted onto NAVD88), and `data/swot_study_area_passes.csv` (64 KB, the SWOT passes for
+the six study reaches, which the slope treatments are rebuilt from).
 Everything else is fetched (USGS via `dataretrieval`; SWORD / FIMBench downloads) or generated (NWM / staged HAND).
 
 ### Tier B — commit via Git LFS (the curated work6 cache, so `git clone` runs work6)

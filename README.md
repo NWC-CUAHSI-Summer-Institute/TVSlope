@@ -49,12 +49,11 @@ code/
   04_timevary_slope.ipynb      the time-varying gauge S(Q) method over the full reach selection
   05_work6_3DHRS.ipynb         the focused six-reach study and manuscript figures
   06_TV_Slope_FIM.ipynb        the consolidated study, end to end  (run this one)
-  07_sebastian_sq_study.ipynb  Sebastian's parallel S(Q) reading   (see README_SEBASTIAN.md)
   get_data.py                  downloads the large datasets that are not provided (FIMBench, SWORD)
   tvslope_src/
-    engine/                    the analysis modules: datum, study config, S(Q), scoring, figures
+    engine/                    the analysis modules: datum, study config, slope treatments, S(Q),
+                               benchmark gate, causal footprint, scoring, figures
     fimbox_ext/                the FIMbox-wrapping drivers: build HAND + generate the FIM
-    sebastian/                 the frozen parallel engine behind notebook 07, plus sq_core.py
 data/                          small derived data
 output_final/                  figures and tables written by the notebooks
 ```
@@ -72,7 +71,6 @@ output_final/                  figures and tables written by the notebooks
 | 04 | [`code/04_timevary_slope.ipynb`](code/04_timevary_slope.ipynb) | FIM method | Develops the time-varying gauge *S(Q)* method over the full reach selection: paired-gauge slope vs discharge, iterative Manning injection, HAND-FIM, and River-Mask CSI/F1. |
 | 05 | [`code/05_work6_3DHRS.ipynb`](code/05_work6_3DHRS.ipynb) | FIM headline study | The focused six-reach study and manuscript figures: static-satellite vs gauge time-varying *S(Q)*, scored on the River-Mask domain, with Results & Discussion. |
 | 06 | [`code/06_TV_Slope_FIM.ipynb`](code/06_TV_Slope_FIM.ipynb) | Consolidated study | Runs the whole study end to end over the six reaches and scores every slope treatment against FIMBench. |
-| 07 | [`code/07_sebastian_sq_study.ipynb`](code/07_sebastian_sq_study.ipynb) | Parallel S(Q) reading | Sebastian's working notebook — a separate reading of the same research question over 17 reaches. Documented in [`README_SEBASTIAN.md`](README_SEBASTIAN.md). ~74 MB with embedded outputs; open it locally. |
 
 ## Installation
 
@@ -129,10 +127,55 @@ Running `05_work6_3DHRS.ipynb` writes every figure into [`output_final/`](output
 
 ![Workflow](figure/workflow.png)
 
-Two choices make the comparison defensible: **(1)** every event is forced by one NWM family (retrospective, or the
-operational short-range forecast for post-2023 floods — never a substituted gauge); **(2)** every metric is computed
-on the **river mask** (the union of the reach's NWM catchments, benchmark cleaned to its largest connected
-component), removing the large off-channel false-negative term that a whole-benchmark score would impose.
+Three choices make the comparison defensible:
+
+**(1)** every event is forced by one NWM family (retrospective, or the operational short-range forecast for
+post-2023 floods — never a substituted gauge);
+
+**(2)** every metric is computed on the **river mask** — the union of the reach's NWM catchments, with
+benchmark water that is not connected to the riverline dropped — removing the large off-channel term a
+whole-benchmark score would impose. `engine/reach_mask.py` adds the invariant that follows from this: if the
+flood map changes *outside* the catchments the injection touched, the injection touched something it should
+not have. That is a correctness test, not a metric, and it has caught a real bug.
+
+**(3)** **permanent water is excluded from scoring.** FIMBench benchmarks are *observed-water* maps, so they
+contain the river sitting in its own channel, and the channel is not a flood. The operational `fimeval`
+scorer gives permanent water its own class and excludes it; this pipeline previously did not.
+`score_rm(..., exclude_permanent_water=True)` now drops those pixels from the domain entirely.
+
+It matters, and by more than expected — measured in
+[`output_final/tables/permanent_water_effect.csv`](output_final/tables/permanent_water_effect.csv):
+
+| Reach | CSI before | CSI after | ΔCSI | benchmark-wet that was channel |
+|---|---:|---:|---:|---:|
+| 74282100101 Illinois | 0.624 | 0.555 | −0.069 | 23.9 % |
+| 74282100111 Illinois | 0.604 | 0.477 | −0.127 | 30.3 % |
+| **74267300251 Ohio** | 0.349 | 0.117 | **−0.232** | **54.3 %** |
+| 74295200111 Big Sioux | 0.351 | 0.347 | −0.004 | 1.2 % |
+
+On the Ohio **more than half** of everything the benchmark calls wet is permanent channel. Note the sign:
+CSI *falls* when the channel is removed, and POD falls with it (Ohio 0.68 → 0.36), so the channel was
+scoring as **true positive** — the model did wet it — and was inflating every treatment with easy,
+slope-insensitive agreement. That is the same reason the river mask exists: it is ground the slope treatment
+cannot move, so it does not belong in a metric meant to separate treatments.
+
+And it does sharpen the comparison, which is the point. Per treatment on Illinois reach 74282100101
+([`permanent_water_by_treatment.csv`](output_final/tables/permanent_water_by_treatment.csv), domain −15.6 %):
+
+| Treatment | CSI before | CSI after | ΔCSI |
+|---|---:|---:|---:|
+| hfirissword_new | 0.6247 | 0.5598 | −0.065 |
+| swot_maxwse | 0.6243 | 0.5553 | −0.069 |
+| gauge_median | 0.6223 | 0.5573 | −0.065 |
+| swot_median | 0.6166 | 0.5538 | −0.063 |
+| swot_floodstage | 0.5887 | 0.5137 | −0.075 |
+| *baseline* | *0.4374* | *0.3235* | *−0.114* |
+
+The **baseline loses most** (−0.114 against −0.063…−0.075), so every treatment's margin over it grows, and
+the spread among the treatments widens from **0.036 to 0.046** — a 28 % gain in separation. The ranking is
+otherwise stable; the only change is `swot_maxwse` and `gauge_median` swapping across a 0.002 near-tie.
+
+**These CSIs are lower than the previously published ones, and they measure floodplain skill.**
 
 ## Vertical datum: SWOT WSE and the geoid
 
@@ -187,8 +230,8 @@ dominant on a flat one — worst case reach `74267300241` (Ohio River, 18.5 km) 
 6.42 mm/km**, i.e. the old value was **more than double** the true slope. That is the backwater regime this
 study finds to be first-order, so the fix bites exactly where it matters most.
 
-One scope caveat: `code/tvslope_src/sebastian/` is a frozen parallel reading and still carries the original
-unharmonised `per_reach3`, so its committed notebook outputs stay reproducible.
+This is now the only gauge chain in the repository: the parallel tree that carried the unharmonised
+version has been merged in and removed.
 
 ## Data
 

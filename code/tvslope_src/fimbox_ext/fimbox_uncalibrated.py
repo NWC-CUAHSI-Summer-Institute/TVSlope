@@ -17,8 +17,10 @@ from fimbox import (
 )
 from fimbox._dask import _resolve_n_workers
 
-FIMBOX_ROOT = Path("/Users/zixun/2026SI/FIMBox_github/fimbox")   # pinned absolute (was relative to code/; kept fixed so this file works from tvslope_src/fimbox_ext/)
-DENY_UNIT = FIMBOX_ROOT / "config" / "deny_unit.lst"
+from _paths import DATA, fimbox_root, fimbox_config
+
+FIMBOX_ROOT = fimbox_root()                       # $FIMBOX_ROOT, else the installed package
+DENY_UNIT = fimbox_config("deny_unit.lst")
 
 def stage_inputs(huc8: str | None, boundary: str | None, out_dir: Path,
                  identifier: str, buffer_m: float) -> Path:
@@ -73,9 +75,9 @@ def build_hand_src(aoi_dir: Path, slope_csv: Path | None) -> None:
     print(f"[2] HAND/SRC built (NO calibration): branch_zero=1, non-zero ok={ok}, "
           f"slope_csv={slope_csv or 'PACKAGED-BASELINE'}")
 
-FIMBOX_DATA = FIMBOX_ROOT / "data"
-RECURRENCE_FLOWS = FIMBOX_DATA / "nwm3_17C_recurrence_flows_cfs.parquet"       # packaged NWM 3.0 recurrence flows (cfs)
-BANKFULL_FLOWS = Path("/Users/zixun/2026SI/slipperyslope/data/fimbox_bankfull_2yr_cms.parquet")   # derived: feature_id, discharge(cms)
+FIMBOX_DATA = (FIMBOX_ROOT / "data") if FIMBOX_ROOT else None
+RECURRENCE_FLOWS = (FIMBOX_DATA / "nwm3_17C_recurrence_flows_cfs.parquet") if FIMBOX_DATA else None  # packaged NWM 3.0 recurrence flows (cfs)
+BANKFULL_FLOWS = DATA / "fimbox_bankfull_2yr_cms.parquet"    # derived: feature_id, discharge(cms); committed
 
 def _ensure_bankfull_flows() -> Path:
     if not BANKFULL_FLOWS.exists():

@@ -7,18 +7,18 @@ import numpy as np, pandas as pd
 import geopandas as gpd, pyogrio
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import ROOT, DATA, SWORD, FB, fimbox_src, slope_treatments_csv
+_fs = fimbox_src()
+if _fs: sys.path.insert(0, str(_fs))
 import fimbox
 from fimbox import getAllInputData, BranchDerivation, AOIProcessingConfig, calculate_allbranches, generateFIM, getNWMretrospective
 from fimbox._dask import _resolve_n_workers
 import fimbox_uncalibrated as FU
 import dataretrieval.nwis as nwis
 
-ROOT = Path("/Users/zixun/2026SI/slipperyslope")
-SWORD = ROOT/"data/SWORD_v17b_gpkg/na_sword_reaches_v17b.gpkg"
-FB = ROOT/"data/fimbox_out"
 CFS = 0.028316846592
 NW = _resolve_n_workers()
-st = pd.read_csv(ROOT/"output_exp6/select/slope_treatments.csv", dtype={"reach": str}).drop_duplicates("reach").set_index("reach")
+st = pd.read_csv(slope_treatments_csv(), dtype={"reach": str}).drop_duplicates("reach").set_index("reach")
 ONLY = os.environ.get("ONLY_REACH")
 FORCE = bool(os.environ.get("FORCE_FIM"))   # 1 -> overwrite existing tifs (full rebuild) instead of skipping
 
