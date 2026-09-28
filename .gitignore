@@ -64,3 +64,6 @@ data/paired_reach_SWOT_gage/paired_reach_SWOT_gage.csv
 !data/paired_reach_SWOT_gage/gauge_latlon.csv
 data/discharge/
 data/twin_gauge/
+
+# --- NWIS response cache written by tvslope_src/sebastian/sq_core.py ---
+code/tvslope_src/sebastian/sq_cache/
