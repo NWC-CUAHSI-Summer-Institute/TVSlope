@@ -1,15 +1,22 @@
-<h1 align="center">TVSlope</h1>
-<p align="center"><b>Time-varying river slope in HAND-FIM synthetic rating curves</b></p>
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.10-3776AB?logo=python&logoColor=white" alt="python">
-  <img src="https://img.shields.io/badge/Jupyter-notebooks-F37626?logo=jupyter&logoColor=white" alt="jupyter">
-  <img src="https://img.shields.io/badge/HAND--FIM-flood%20inundation-1f77b4" alt="hand-fim">
-  <img src="https://img.shields.io/badge/data-SWOT%20%C2%B7%20IRIS%20%C2%B7%20NWM%20%C2%B7%20FIMBench-2ca02c" alt="data">
-</p>
+<div align="center">
 
-<p align="center"><i>Does replacing the river slope in operational HAND flood-inundation mapping with a
-satellite-derived or a time-varying gauge-derived product measurably change flood-map skill, and where (by
-hydraulic regime) does it matter?</i></p>
+  # Evaluating the Sensitivity of HAND Flood Inundation Mapping to River Slope
+
+### Innovation in Flood Inundation Mapping for Operational Forecasting
+
+**CUAHSI Summer Institute 2026** · 
+![Status](https://img.shields.io/badge/status-active-2ea44f?style=flat-square)
+![Institute](https://img.shields.io/badge/CUAHSI-Summer_Institute_2026-2166ac?style=flat-square)
+![Reaches](https://img.shields.io/badge/study_reaches-6-9b59b6?style=flat-square)
+![Treatments](https://img.shields.io/badge/slope_treatments-4-b2182b?style=flat-square)
+![Python](https://img.shields.io/badge/python-3.10-3776AB?style=flat-square&logo=python&logoColor=white)
+
+The uncalibrated NOAA-OWP HAND synthetic rating curve is Manning (`Q ∝ √S`), so the river **slope** `S` is an
+important control on the mapped flood extent. This repository asks whether replacing that slope with a
+static-satellite product (IRIS-SWORD, SWOT) or a **time-varying gauge-derived `S(Q)`** measurably changes HAND-FIM
+skill, and where (by hydraulic regime) it matters.
+
+</div>
 
 <p align="center"><img src="output_final/figures/workflow_architecture.png" width="88%" alt="workflow"></p>
 
@@ -29,9 +36,28 @@ a **static-satellite** baseline (IRIS-SWORD; Chen et al., 2025), three **SWOT**-
 **second-order** control on flood extent, while the **hydraulic regime** — free-flowing (kinematic) versus backwater
 — is **first-order**: an order-of-magnitude slope range collapses to a few-hundredths range in CSI.
 
+## What's here
+
+```
+code/TV_Slope_FIM.ipynb        the consolidated study notebook (run this)
+code/work6_3DHRS.ipynb         the focused six-reach study and manuscript figures
+code/timevary_slope.ipynb      the time-varying gauge S(Q) method over the full reach selection
+code/study_area.ipynb          FIM reach selection (FIMBench coverage + gauge triplets)
+code/gauge_study.ipynb         CONUS-wide gauge-availability survey (gauges only, not FIM)
+code/swot_geoid_slope.ipynb    vertical datum: SWOT WSE on the geoid, and slope's datum sensitivity
+code/tvslope_src/engine/       analysis modules
+code/tvslope_src/fimbox_ext/   build HAND + generate the FIM
+code/get_data.py               downloads the large datasets that are not provided (FIMBench, SWORD)
+notebooks/work_0607.ipynb      Sebastian's parallel S(Q) notebook  (see README_SEBASTIAN.md)
+notebooks/sq_core.py           the S(Q) chain rebuilt against the public USGS NWIS API
+src/                           the modules that notebooks/work_0607.ipynb imports
+data/                          small derived data
+output_final/                  figures and tables written by the notebooks
+```
+
 ## Notebooks
 
-The first two notebooks are **reach-selection** steps; the last two are the **FIM analysis**.
+The first two notebooks are **reach-selection** steps; the rest are the **FIM analysis**.
 
 | Notebook | Scope | What it does |
 |---|---|---|
@@ -39,14 +65,18 @@ The first two notebooks are **reach-selection** steps; the last two are the **FI
 | [`code/study_area.ipynb`](code/study_area.ipynb) | **FIM reach selection** | Selects the reaches used in the FIM study: those covered by a **FIMBench** benchmark (**Tier 1–3** or high-water-mark) **and** carrying a usable gauge triplet, so both the benchmark and the paired-gauge slope are available. Benchmarks are auto-downloaded via `fimeval`. |
 | [`code/timevary_slope.ipynb`](code/timevary_slope.ipynb) | FIM method | Develops the time-varying gauge *S(Q)* method over the full reach selection: paired-gauge slope vs discharge, iterative Manning injection, HAND-FIM, and River-Mask CSI/F1. |
 | [`code/work6_3DHRS.ipynb`](code/work6_3DHRS.ipynb) | FIM headline study | The focused six-reach study and manuscript figures: static-satellite vs gauge time-varying *S(Q)*, scored on the River-Mask domain, with Results & Discussion. |
+| [`code/TV_Slope_FIM.ipynb`](code/TV_Slope_FIM.ipynb) | Consolidated study | Runs the whole study end to end over the six reaches and scores every slope treatment against FIMBench. |
+| [`code/swot_geoid_slope.ipynb`](code/swot_geoid_slope.ipynb) | **Vertical datum** | Verifies which vertical datum SWOT WSE is on, and quantifies how much the choice of geoid (ellipsoid / EGM2008 / EGM96 / NAVD88) changes a computed water-surface slope. See [Vertical datum](#vertical-datum-swot-wse-and-the-geoid). |
+| [`notebooks/work_0607.ipynb`](notebooks/work_0607.ipynb) | Parallel S(Q) reading | Sebastian's working notebook — a separate reading of the same research question over 17 reaches. Documented in [`README_SEBASTIAN.md`](README_SEBASTIAN.md). ~74 MB with embedded outputs; open it locally. |
 
 ## Installation
 
 ```bash
-git clone https://github.com/zixunn/TVSlope.git
+git clone https://github.com/NWC-CUAHSI-Summer-Institute/TVSlope.git
 cd TVSlope
-conda env create -f environment.yml     # base geo-stack: geopandas, rasterio, scipy, matplotlib, dataretrieval, ...
+conda env create -f environment.yml     # base geo-stack: geopandas, rasterio, pyproj, scipy, matplotlib, ...
 conda activate slope
+python code/get_data.py                 # FIMBench + SWORD (large; not in the repo)
 ```
 
 The notebooks also use three HAND-FIM tools from the [SDML lab](https://github.com/sdmlua). Install the ones you
@@ -61,6 +91,7 @@ pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (need
 | To do this | You need |
 |---|---|
 | Reproduce the cached figures (`work6_3DHRS`) | base env only |
+| Run the vertical-datum notebook (`swot_geoid_slope`) | base env only (downloads geoid grids on first use) |
 | Select reaches / download benchmarks (`gauge_study`, `study_area`) | base env + `fimeval` |
 | Regenerate FIM from scratch (`REGEN_FIM=True` / `TVS_REGEN=1`) | base env + `fimeval` + `fimbox` + `fimserve` |
 
@@ -91,6 +122,8 @@ Running `work6_3DHRS.ipynb` writes every figure into [`output_final/`](output_fi
 
 ## Method &amp; workflow
 
+![Workflow](figure/workflow.png)
+
 Two choices make the comparison defensible: **(1)** every event is forced by one NWM family (retrospective, or the
 operational short-range forecast for post-2023 floods — never a substituted gauge); **(2)** every metric is computed
 on the **river mask** (the union of the reach's NWM catchments, benchmark cleaned to its largest connected
@@ -101,12 +134,25 @@ component), removing the large off-channel false-negative term that a whole-benc
 The repository commits only the small derived tables that cannot be queried from a public service; everything else
 is downloaded or generated by the workflow (full manifest, sizes, and sources in [`DATA.md`](DATA.md)).
 
-| Committed here (`data/`) | Fetched / generated by the workflow |
-|---|---|
-| `FIMHF_IRIS_new.csv`, `FIMHF_IRIS_v1.0.csv` — IRIS-SWORD satellite slopes (Chen et al., 2025) | **FIMBench** benchmarks — auto-downloaded via `fimeval` |
-| `slope_treatments.csv` — SWOT-derived slope products per reach | **USGS** stage/discharge — auto-fetched via `dataretrieval` |
-| `study_area_gauges.csv` — same-river gauge triplets | **SWORD** reach network — downloaded from the SWORD data portal |
-|  | **NWM** discharge and the staged **HAND** cache — generated by `fimbox` / `fimserve` |
+**Provided in `data/`**
+
+| File | What it is | Provenance |
+| --- | --- | --- |
+| `data/slope_treatments.csv` | Per-reach slope for each treatment (hydrofabric, IRIS-SWORD, SWOT median/floodstage/maxWSE) | Derived in this study |
+| `data/FIMHF_IRIS_new.csv`, `data/FIMHF_IRIS_v1.0.csv` | IRIS-SWORD static slope | Built from **IRIS v3.3** + **SWORD v17b**, following Chen et al. (2025) |
+| `data/paired_reach_SWOT_gage/gauge_latlon.csv` | USGS gauge coordinates (id, name, lat, lon) | USGS NWIS |
+| `data/study_area_gauges.csv` | Same-river upstream/on-reach/downstream gauge triplets per reach | Derived in this study |
+| `data/fimbox_bankfull_2yr_cms.parquet` | 2-year recurrence (bankfull) discharge per NWM feature_id | NWM recurrence flows |
+| `data/us_states.gpkg` | US state boundaries for the CONUS map | Public US state boundaries |
+
+**Fetched by code — run `python code/get_data.py`.**
+
+| Data | How to get it | Source |
+| --- | --- | --- |
+| FIMBench benchmark flood maps (`data/FIMBench/`) | `python code/get_data.py` (uses `fimeval`) | **FIMbench** (https://tethys.ciroh.org/apps/fimbench-gui/) |
+| SWORD v17b river network (`data/SWORD_v17b_gpkg/na_sword_reaches_v17b.gpkg`) | `python code/get_data.py` | **SWORD v17** (https://zenodo.org/records/15299138) |
+| USGS gauge discharge & stage (`data/discharge/`, `data/twin_gauge/`) | cached on the first notebook run (`dataretrieval`) | USGS NWIS |
+| NWM hydrofabric + 3DEP DEM + staged HAND (`data/fimbox_out/`) | Rebuilt by the notebook when `REGEN_FIM=1` (needs `fimbox`) | NWM / USGS 3DEP, via FIMbox |
 
 ## Examples
 
@@ -117,12 +163,63 @@ is downloaded or generated by the workflow (full manifest, sizes, and sources in
 </tr>
 </table>
 
-## Citation
+## Citations
 
-If you use this code or the derived slope products, please cite this repository.
+- **IRIS v3.3** (ICESat-2 River Surface Slope) — Scherer, D., Schwatke, C., Dettmering, D., & Seitz, F. (2022).
+  ICESat-2 based River Surface Slope and Its Impact on Water Level Time Series From Satellite Altimetry.
+  *Water Resources Research.* https://doi.org/10.1029/2022WR032842 · data: https://zenodo.org/records/14616464
+- **SWORD v17b** (SWOT River Database) — Elizabeth H. Altenau, Tamlin M. Pavelsky, Michael T. Durand, Xiao Yang, Renato P. d. M. Frasson & Liam Bendezu. (2025). SWOT River Database (SWORD) (Version v17b) [Dataset]. Zenodo. https://doi.org/10.5281/zenodo.15299138 · data: https://zenodo.org/records/15299138 · https://www.swordexplorer.com/
+- **IRIS-SWORD slope** — Chen, Y., Cohen, S., Baruah, A., Devi, D., Dhital, S., Tian, D., & Munasinghe, D. (2025). Merging Remote Sensing Derived River Slope Datasets with High-Resolution Hydrofabrics for the United States. *Scientific Data*, 12(1), 1657.
+- **EGM2008** — Pavlis, N. K., Holmes, S. A., Kenyon, S. C., & Factor, J. K. (2012). The development and evaluation of the Earth Gravitational Model 2008 (EGM2008). *Journal of Geophysical Research: Solid Earth*, 117(B4).
+- **National Water Model** (retrospective + operational short-range forecast) — NOAA Office of Water Prediction.
+- **USGS** gauge data and **3DEP** 10 m DEM — U.S. Geological Survey.
+- **FIMBench** benchmark flood maps — Surface Dynamics Modeling Lab, University of Alabama.
+
+## Code and copyright
+
+| Path | Origin | What we changed |
+| --- | --- | --- |
+| `code/tvslope_src/engine/*.py` | Our own code | Written for this study. `timevarying_slope.py` adapts the TimeVariantSlope `S(Q)` method; `fim_reach.py` and `fim_eval.py` reimplement the RiverJoin river-matching and FIMeval scoring concepts. |
+| `code/tvslope_src/fimbox_ext/*.py` | **Built on FIMbox** ([github.com/sdmlua/fimbox](https://github.com/sdmlua/fimbox)) | We modified the code from FIMbox: observation-calibration disabled, per-treatment slope injection, a branch-0 tributary gap-filler, and NWM-forecast forcing. Each file carries a `Built on FIMbox` header noting the source and the change. |
+
+### Source tools and licenses
+
+| Tool | Owner | License | Repository |
+| --- | --- | --- | --- |
+| FIMbox | Surface Dynamics Modeling Lab (Univ. of Alabama) | GPL-3.0 | https://github.com/sdmlua/fimbox |
+| FIMserv | SDML | see repo | https://github.com/sdmlua/FIMserv |
+| FIMeval | SDML | see repo | https://github.com/sdmlua/fimeval |
+| FIMbench | SDML | see repo | https://github.com/sdmlua/fimbench |
+| RiverJoin | SDML | see repo | https://github.com/sdmlua/riverjoin_py |
+| NOAA-OWP/inundation-mapping | NOAA Office of Water Prediction | see repo | https://github.com/NOAA-OWP/inundation-mapping |
+
+> **License note.** FIMbox is **GPL-3.0**. Because the drivers in `code/tvslope_src/fimbox_ext/` build on FIMbox,
+> they are likewise distributed under **GPL-3.0**. Add a top-level `LICENSE` file before publishing more widely.
+
+---
+
+## Team
+
+| Name | Institution | GitHub |
+|---|---|---|
+| Zih-Syun Chen | University of Houston | [@zixunn](https://github.com/zixunn) |
+| Sebastian Marshall | Johns Hopkins University | [@rushmarshall](https://github.com/rushmarshall) |
+| Pitamber Wagle | Brigham Young University | [@Pitamberwagle](https://github.com/Pitamberwagle) |
+| Reza Jamshidi | Northeastern University | [@Reza-Jamshidi](https://github.com/Reza-Jamshidi) |
+
+**Theme leads:** Sagy Cohen and Anupal Baruah, University of Alabama
 
 ## Acknowledgements
 
 Built on the OWP HAND-FIM chain and FIMBench, the [SDML lab](https://github.com/sdmlua) `fimeval` / `fimbox` /
 `fimserve` tools, the SWORD river database, the SWOT and ICESat-2/IRIS water-surface products, and the National
 Water Model.
+
+---
+<div align="center">
+
+**CUAHSI Summer Institute 2026** &nbsp;·&nbsp; **Team Slippery Slope**
+
+University of Houston &nbsp;·&nbsp; Johns Hopkins University &nbsp;·&nbsp; Brigham Young University &nbsp;·&nbsp; Northeastern University 
+
+</div>

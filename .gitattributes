@@ -1,13 +1,19 @@
-# Store large binary geodata with Git LFS (install once: `git lfs install`).
-# GitHub rejects individual files > 100 MB unless they are LFS-tracked.
-*.tif   filter=lfs diff=lfs merge=lfs -text
-*.tiff  filter=lfs diff=lfs merge=lfs -text
-*.gpkg  filter=lfs diff=lfs merge=lfs -text
-*.parquet filter=lfs diff=lfs merge=lfs -text
-*.nc    filter=lfs diff=lfs merge=lfs -text
-
-# Notebooks + text stay as normal git objects (diffable).
+# Text files stay as normal, diffable git objects.
 *.ipynb text
 *.md    text
 *.py    text
 *.csv   text
+
+# Very large rasters/NetCDF would exceed GitHub's 100 MB per-file limit; keep them in
+# Git LFS if they ever have to be committed (install once: `git lfs install`).
+*.tif   filter=lfs diff=lfs merge=lfs -text
+*.tiff  filter=lfs diff=lfs merge=lfs -text
+*.nc    filter=lfs diff=lfs merge=lfs -text
+
+# NOTE: *.gpkg and *.parquet are deliberately NOT LFS-tracked. The two committed
+# binaries (data/us_states.gpkg 4.5 MB, data/fimbox_bankfull_2yr_cms.parquet 22 MB)
+# are well under the 100 MB limit and are stored as ordinary git objects, so the
+# repository can be cloned without git-lfs installed.
+
+# Large source datasets (SWORD, FIMBench, staged HAND, SWOT pulls) are NOT committed --
+# fetch them with code/get_data.py (see README).

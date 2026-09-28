@@ -1,12 +1,21 @@
-# Base conda environment for the four notebooks (gauge_study, study_area, timevary_slope, work6_3DHRS).
+# Conda environment for the notebooks in code/ (gauge_study, study_area, timevary_slope,
+# work6_3DHRS, TV_Slope_FIM, swot_geoid_slope).
 # Create with:  conda env create -f environment.yml   &&   conda activate slope
 #
-# These packages reproduce the cached figures (work6_3DHRS). Three HAND-FIM tools from the SDML lab
-# (https://github.com/sdmlua) are installed separately with pip (kept out of the conda solve to avoid
-# geopandas/rasterio conflicts) -- see the README:
-#     pip install fimeval        # download FIMBench benchmarks   (gauge_study / study_area)
-#     pip install fimserve       # HAND-FIM staging/serving        (FIM regeneration)
+# Versions are pinned so the cached figures (work6_3DHRS) reproduce. The analysis (cache)
+# runs need only these packages.
+#
+# Three HAND-FIM tools from the SDML lab (https://github.com/sdmlua) are installed
+# separately with pip -- kept out of the conda solve to avoid geopandas/rasterio
+# conflicts. See the README:
+#     pip install fimeval        # download FIMBench benchmarks    (gauge_study / study_area)
+#     pip install fimserve       # HAND-FIM staging/serving         (FIM regeneration)
 #     pip install "git+https://github.com/sdmlua/fimbox"   # HAND-FIM generation (REGEN_FIM / TVS_REGEN)
+#
+# Vertical-datum work (code/tvslope_src/engine/datum.py) needs pyproj built against
+# PROJ >= 9, and downloads EGM2008/EGM96/NAVD88 geoid grids from the PROJ CDN on first
+# use (PROJ_NETWORK=ON, the default here). For a fully offline run, also install the
+# optional `proj-data` package, which ships those grids locally.
 name: slope
 channels:
   - conda-forge
@@ -19,12 +28,15 @@ dependencies:
   - rasterio=1.4
   - shapely=2.1
   - affine=2.4
+  - pyproj>=3.6          # PROJ >= 9: vertical-datum / geoid transforms
   - scipy=1.15
   - scikit-learn=1.7
   - matplotlib=3.10
+  - cartopy              # TV_Slope_FIM.ipynb map cell only
   - contextily=1.7
   - xyzservices
   - dataretrieval=1.1
   - openpyxl=3.1
+  # - proj-data          # uncomment for offline geoid grids (large, ~600 MB)
   - jupyter
   - pip
