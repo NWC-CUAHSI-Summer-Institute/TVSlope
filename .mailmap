@@ -1,0 +1,9 @@
+# Canonical identities. Several contributors have committed under more than one name or
+# email (local git config vs the GitHub web UI), which makes one person look like several
+# in `git log`, `git shortlog` and `git blame`. This maps every variant onto one identity.
+#
+#   Proper Name <proper@email>  Commit Name <commit@email>
+
+Zih-Syun Chen <emily30823@gmail.com> zixunn <emily30823@gmail.com>
+Zih-Syun Chen <emily30823@gmail.com> ZihSyun Chen <90740044+zixunn@users.noreply.github.com>
+Zih-Syun Chen <emily30823@gmail.com> Zih-Syun Chen <emily30823@gmail.com>
