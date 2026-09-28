@@ -63,28 +63,66 @@ def stage_series(g):
     try: o.to_csv(f, index=False)
     except Exception: pass
     return o
-_DC = TG/"_datum8.csv"; _dc = {}
+# --- gauge datum elevations, harmonised onto one vertical datum -------------------------------
+# NWIS reports alt_va against whatever alt_datum_cd says. Among this study's gauges that is
+# NAVD88 for most, NGVD29 for a few, and absent for a handful -- and 7 twin-gauge pairs are
+# split across two datums. Differencing those two gauges without converting folds the
+# NGVD29<->NAVD88 offset (~0.1-0.2 m here, and spatially varying) straight into the
+# water-surface slope. Over a 20-30 km span that is ~5-10 mm/km of pure artefact, the same
+# order as the real signal. So the elevation is converted to datum.GAUGE_REF_DATUM on the way
+# in, and a gauge whose datum is unusable (LOCAL / ASSUMED / missing) yields NaN rather than a
+# number that silently poisons the pair.
+import datum as _VD
+
+_DC = TG/f"_datum8_{_VD.GAUGE_REF_DATUM}.csv"      # new schema; the old _datum8.csv lacked alt_datum_cd
+_dc: dict[str, dict] = {}
 if _DC.exists():
-    try: _dc.update(pd.read_csv(_DC, dtype={"site": str}).set_index("site").alt.to_dict())
+    try:
+        _dc.update(pd.read_csv(_DC, dtype={"site": str}).set_index("site").to_dict("index"))
     except Exception: pass
-def datum(g):
-    if g in _dc and _dc[g] == _dc[g]: return _dc[g]
-    v = np.nan
+
+def _fetch_site(g):
+    """NWIS expanded site record -> (alt_va in metres, alt_datum_cd, lat, lon)."""
     for _ in range(3):
         try:
             u = "https://waterservices.usgs.gov/nwis/site/?"+urllib.parse.urlencode({"format": "rdb", "sites": g, "siteOutput": "expanded"})
             raw = urllib.request.urlopen(u, timeout=60).read().decode(); L = [l for l in raw.splitlines() if l and not l.startswith("#")]
             if len(L) >= 3:
                 cols = L[0].split("\t"); d = pd.DataFrame([dict(zip(cols, l.split("\t"))) for l in L[2:]])
-                a = pd.to_numeric(d.get("alt_va"), errors="coerce")
-                if len(a) and pd.notna(a.iloc[0]): v = float(a.iloc[0])*FT
-            break
+                a  = pd.to_numeric(d.get("alt_va"), errors="coerce")
+                la = pd.to_numeric(d.get("dec_lat_va"), errors="coerce")
+                lo = pd.to_numeric(d.get("dec_long_va"), errors="coerce")
+                cd = d.get("alt_datum_cd")
+                return (float(a.iloc[0])*FT if len(a) and pd.notna(a.iloc[0]) else np.nan,
+                        str(cd.iloc[0]).strip() if cd is not None and len(cd) else "",
+                        float(la.iloc[0]) if len(la) and pd.notna(la.iloc[0]) else np.nan,
+                        float(lo.iloc[0]) if len(lo) and pd.notna(lo.iloc[0]) else np.nan)
+            return np.nan, "", np.nan, np.nan
         except Exception: continue
-    _dc[g] = v
-    try: pd.DataFrame([{"site": s, "alt": a} for s, a in _dc.items()]).to_csv(_DC, index=False)
+    return np.nan, "", np.nan, np.nan
+
+def datum_info(g):
+    """Full harmonised datum record for a gauge, cached. Keys: alt, alt_raw, cd, lat, lon, note."""
+    if g in _dc: return _dc[g]
+    raw, cd, la, lo = _fetch_site(g)
+    if raw != raw or la != la or lo != lo:
+        rec = dict(alt=np.nan, alt_raw=raw, cd=cd, lat=la, lon=lo,
+                   note="no alt_va / coordinates reported" if raw != raw else "no coordinates reported")
+    else:
+        h, note = _VD.gauge_elevation_to(lo, la, raw, cd, _VD.GAUGE_REF_DATUM)
+        rec = dict(alt=h, alt_raw=raw, cd=cd, lat=la, lon=lo, note=note)
+    _dc[g] = rec
+    try:
+        pd.DataFrame([{"site": k, **v} for k, v in _dc.items()]).to_csv(_DC, index=False)
     except Exception: pass
-    return v
+    return rec
+
+def datum(g):
+    """Gauge datum elevation in metres on datum.GAUGE_REF_DATUM (NaN if the datum is unusable)."""
+    return datum_info(g)["alt"]
+
 def wse_series(g):
+    """Gauge water-surface elevation on datum.GAUGE_REF_DATUM."""
     s = stage_series(g); a = datum(g)
     if not len(s) or a != a: return pd.DataFrame(columns=["date", "wse"])
     return pd.DataFrame({"date": s.date.values, "wse": a+s.gh.values})
@@ -103,4 +141,4 @@ def twin_series(row):
     if len(dis): m = m.merge(dis.rename(columns={"datetime": "date"})[["date", "discharge_cms"]], on="date", how="left")
     else: m["discharge_cms"] = np.nan
     return m.sort_values("date")
-P3  = SimpleNamespace(GC=GC, discharge=discharge, stage_series=stage_series, datum=datum, wse_series=wse_series, twin_series=twin_series)
+P3  = SimpleNamespace(GC=GC, discharge=discharge, stage_series=stage_series, datum=datum, datum_info=datum_info, wse_series=wse_series, twin_series=twin_series)
