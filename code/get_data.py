@@ -47,5 +47,8 @@ def check_sword():
 if __name__ == "__main__":
     get_fimbench()
     check_sword()
+    print("\nswot_geoid_slope.ipynb (vertical datum) needs nothing from here -- its three input tables are\n"
+          "committed in data/. It does download EGM2008/EGM96/NAVD88 geoid grids from the PROJ CDN on\n"
+          "first use; `conda install proj-data` ships them locally for an offline run.")
     print("\nUSGS gauge discharge/stage are downloaded and cached automatically on the first notebook run.")
     print("The staged HAND (data/fimbox_out) is rebuilt by the notebook when REGEN_FIM=1 (needs fimbox installed).")

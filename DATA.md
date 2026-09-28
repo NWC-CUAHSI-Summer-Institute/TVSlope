@@ -18,6 +18,7 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
 | `gauge_study.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/us_states.gpkg`; USGS NWIS (auto via `dataretrieval`) | `output_gauge/` |
 | `study_area.ipynb` | `data/SWORD_v17b_gpkg/…` (CONUS, 3.7 GB); `data/usgs_gages.gpkg`; `data/paired_reach_SWOT_gage/…`; `data/benchmark_domain_t123hwm.gpkg`; `data/GDW/` (dams); FIMBench (auto-downloaded via `fimeval`) | `output_study_area/` |
 | `timevary_slope.ipynb` | `data/SWORD_v17b_gpkg/…`; `data/FIMBench/…`; `data/FIMHF_IRIS_new.csv`; `data/discharge/`, `data/twin_gauge/`; `data/fimbox_out/HUC*/` (18 HUCs, cache) | `output_study_area/timevary/` |
+| `swot_geoid_slope.ipynb` | `data/swot_hydrocron_study_reaches.csv`; `data/swot_study_reach_nodes.csv`; `data/swot_study_reaches_sword.csv` (all committed — no SWORD download needed); PROJ geoid grids (EGM2008 / EGM96 / NAVD88, fetched from the PROJ CDN on first use and cached) | `output_final/tables/swot_datum_verification.csv`, `output_final/tables/geoid_slope_sensitivity.csv`, `output_final/figures/geoid_datum_slope.{png,svg}` |
 
 **Sizes that matter** (`du -sh`):
 
@@ -31,6 +32,7 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
 | work6 6 HUCs `watershed-data` small files (streams+catchments gpkg + `hydroTable*.orig`) | ~0.3–0.5 GB | B (LFS) |
 | work6 6 FIMBench `*_BM.tif` (Ohio 0.2 m 521 MB + Illinois 0.4 m 465 MB dominate) | ~1.0 GB | B (LFS) — **clip first, see §4** |
 | `data/slope_treatments.csv`, `data/study_area_gauges.csv` | < 1 MB | A (git) |
+| `data/swot_hydrocron_study_reaches.csv`, `data/swot_study_reach_nodes.csv`, `data/swot_study_reaches_sword.csv` | 1.8 MB | A (git) |
 
 ---
 
@@ -39,7 +41,7 @@ The strategy below splits the data into three tiers: **(A) commit to git**, **(B
 ```
 <your-repo>/
   .slope_root                 # marker so the notebooks find the root from any subfolder
-  .gitignore  .gitattributes  # provided here (LFS for *.tif/*.gpkg/*.parquet)
+  .gitignore  .gitattributes  # provided here (LFS for *.tif/*.tiff/*.nc only)
   environment.yml             # conda env
   README.md  DATA.md
   code/                       # the 3 notebooks (or rename to notebooks/)
@@ -67,7 +69,11 @@ Notebook paths need **no editing** — they already use `ROOT/"data"/…`. If yo
 `environment.yml`, `README.md`, `DATA.md`, `.slope_root`, `.gitignore`, `.gitattributes`, the 3 notebooks,
 `output_final/`, and the derived tables that cannot be fetched from a public service:
 `data/FIMHF_IRIS_new.csv`, `data/FIMHF_IRIS_v1.0.csv` (IRIS-SWORD slopes),
-`data/slope_treatments.csv` (SWOT slope products), `data/study_area_gauges.csv` (gauge triplets).
+`data/slope_treatments.csv` (SWOT slope products), `data/study_area_gauges.csv` (gauge triplets),
+and the three SWOT/SWORD extracts that make the vertical-datum notebook reproducible without the
+3.7 GB SWORD download: `data/swot_hydrocron_study_reaches.csv` (1.1 MB, the Hydrocron pull for the
+study reaches), `data/swot_study_reach_nodes.csv` (680 KB, the SWORD node chain — coordinates and
+`dist_out` — for those reaches), `data/swot_study_reaches_sword.csv` (12 KB, reach centroids).
 Everything else is fetched (USGS via `dataretrieval`; SWORD / FIMBench downloads) or generated (NWM / staged HAND).
 
 ### Tier B — commit via Git LFS (the curated work6 cache, so `git clone` runs work6)
